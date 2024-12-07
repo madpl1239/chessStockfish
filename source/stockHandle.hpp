@@ -5,7 +5,11 @@
  */
 #pragma once
 
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/wait.h>
 #include "defines.hpp"
+#include <thread>
 
 
 class Stockfish
@@ -13,41 +17,41 @@ class Stockfish
 public:
 	Stockfish(const std::string& stockfishPath)
 	{
-		if(pipe(stockfishInput) == -1 or pipe(stockfishOutput) == -1)
+		if(pipe(m_stockfishInput) == -1 or pipe(m_stockfishOutput) == -1)
 		{
 			perror("error creating streams");
 			throw std::runtime_error("failed to create streams");
 		}
-
-		pid = fork();
-		if(pid == -1)
+		
+		m_pid = fork();
+		if(m_pid == -1)
 		{
 			perror("error during fork()");
 			throw std::runtime_error("failed to create child process");
 		}
-
-		if(pid == 0)
+		
+		if(m_pid == 0)
 		{
 			// child process
-			close(stockfishInput[1]);
-			close(stockfishOutput[0]);
-
-			if(dup2(stockfishInput[0], STDIN_FILENO) == -1 or
-				dup2(stockfishOutput[1], STDOUT_FILENO) == -1)
+			close(m_stockfishInput[1]);
+			close(m_stockfishOutput[0]);
+			
+			if(dup2(m_stockfishInput[0], STDIN_FILENO) == -1 or
+				dup2(m_stockfishOutput[1], STDOUT_FILENO) == -1)
 			{
 				perror("error while redirecting descriptors");
 				exit(1);
 			}
-
-			close(stockfishInput[0]);
-			close(stockfishOutput[1]);
-
+			
+			close(m_stockfishInput[0]);
+			close(m_stockfishOutput[1]);
+			
 			if(access(stockfishPath.c_str(), X_OK) == -1)
 			{
-				perror("Stockfish does not exist or permissions are not available");
+				perror("Stockfish does not exist or permissions not available");
 				exit(1);
 			}
-
+			
 			execlp(stockfishPath.c_str(), stockfishPath.c_str(), nullptr);
 			perror("error starting Stockfish");
 			exit(1);
@@ -55,10 +59,10 @@ public:
 		else
 		{
 			// parent process
-			close(stockfishInput[0]);
-			close(stockfishOutput[1]);
+			close(m_stockfishInput[0]);
+			close(m_stockfishOutput[1]);
 		}
-
+		
 		// stockfish readness check
 		sendCommand("uci");
 		std::string response = getResponse();
@@ -70,7 +74,7 @@ public:
 	{
 		std::string cmd = command + "\n";
 		
-		if(write(stockfishInput[1], cmd.c_str(), cmd.size()) == -1)
+		if(write(m_stockfishInput[1], cmd.c_str(), cmd.size()) == -1)
 		{
 			perror("error writing to stockfish");
 			throw std::runtime_error("failed to send command to stockfish");
@@ -83,11 +87,11 @@ public:
 		std::string response;
 		ssize_t bytesRead;
 		
-		while((bytesRead = read(stockfishOutput[0], buffer, sizeof(buffer) - 1)) > 0)
+		while((bytesRead = read(m_stockfishOutput[0], buffer, sizeof(buffer) - 1)) > 0)
 		{
 			buffer[bytesRead] = '\0';
 			response += buffer;
-
+			
 			if (response.find("uciok") != std::string::npos or 
 				response.find("readyok") != std::string::npos or 
 				response.find("bestmove") != std::string::npos)
@@ -107,15 +111,15 @@ public:
 
 	~Stockfish()
 	{
-		close(stockfishInput[1]);
-		close(stockfishOutput[0]);
+		close(m_stockfishInput[1]);
+		close(m_stockfishOutput[0]);
 		
 		// wait for stockfish process
-		waitpid(pid, nullptr, 0);
+		waitpid(m_pid, nullptr, 0);
 	}
 	
 private:
-	int stockfishInput[2];
-	int stockfishOutput[2];
-	pid_t pid;
+	int m_stockfishInput[2];
+	int m_stockfishOutput[2];
+	pid_t m_pid;
 };

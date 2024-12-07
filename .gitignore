@@ -2,3 +2,4 @@ build
 resource
 CMakeLists.txt
 stockfish
+main.cpp
