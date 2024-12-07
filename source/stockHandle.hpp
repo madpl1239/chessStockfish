@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/wait.h>
-#include "defines.hpp"
 #include <thread>
 
 
@@ -70,6 +69,15 @@ public:
 			throw std::runtime_error("stockfish did not respond correctly to UCI");
 	}
 
+	~Stockfish()
+	{
+		close(m_stockfishInput[1]);
+		close(m_stockfishOutput[0]);
+		
+		// wait for stockfish process
+		waitpid(m_pid, nullptr, 0);
+	}
+	
 	void sendCommand(const std::string& command)
 	{
 		std::string cmd = command + "\n";
@@ -92,7 +100,7 @@ public:
 			buffer[bytesRead] = '\0';
 			response += buffer;
 			
-			if (response.find("uciok") != std::string::npos or 
+			if(response.find("uciok") != std::string::npos or 
 				response.find("readyok") != std::string::npos or 
 				response.find("bestmove") != std::string::npos)
 			{
@@ -107,15 +115,6 @@ public:
 		}
 		
 		return response;
-	}
-
-	~Stockfish()
-	{
-		close(m_stockfishInput[1]);
-		close(m_stockfishOutput[0]);
-		
-		// wait for stockfish process
-		waitpid(m_pid, nullptr, 0);
 	}
 	
 private:

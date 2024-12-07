@@ -3,3 +3,4 @@ resource
 CMakeLists.txt
 stockfish
 main.cpp
+stockTest
