@@ -136,6 +136,6 @@ private:
 	// for parent process
 	int m_pipe1[2];
 	
-	// for child process - stockifh
+	// for child process - stockfish
 	int m_pipe2[2];
 };
