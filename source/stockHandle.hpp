@@ -10,13 +10,18 @@
 #include <sys/wait.h>
 #include <thread>
 
+#define DEBUG 1
+
+#define READ 0
+#define WRITE 1
+
 
 class Stockfish
 {
 public:
 	Stockfish(const std::string& stockfishPath)
 	{
-		if(pipe(m_stockfishInput) == -1 or pipe(m_stockfishOutput) == -1)
+		if(pipe(m_pipe1) == -1 or pipe(m_pipe2) == -1)
 		{
 			perror("error creating streams");
 			throw std::runtime_error("failed to create streams");
@@ -31,19 +36,19 @@ public:
 		
 		if(m_pid == 0)
 		{
-			// child process
-			close(m_stockfishInput[1]);
-			close(m_stockfishOutput[0]);
+			// child process - stockfish
+			close(m_pipe1[WRITE]);
+			close(m_pipe2[READ]);
 			
-			if(dup2(m_stockfishInput[0], STDIN_FILENO) == -1 or
-				dup2(m_stockfishOutput[1], STDOUT_FILENO) == -1)
+			if(dup2(m_pipe1[READ], STDIN_FILENO) == -1 or
+				dup2(m_pipe2[WRITE], STDOUT_FILENO) == -1)
 			{
 				perror("error while redirecting descriptors");
 				exit(1);
 			}
 			
-			close(m_stockfishInput[0]);
-			close(m_stockfishOutput[1]);
+			close(m_pipe1[READ]);
+			close(m_pipe2[WRITE]);
 			
 			if(access(stockfishPath.c_str(), X_OK) == -1)
 			{
@@ -57,9 +62,9 @@ public:
 		}
 		else
 		{
-			// parent process
-			close(m_stockfishInput[0]);
-			close(m_stockfishOutput[1]);
+			// parent process - main function
+			close(m_pipe1[READ]);
+			close(m_pipe2[WRITE]);
 		}
 		
 		// stockfish readness check
@@ -67,22 +72,30 @@ public:
 		std::string response = getResponse();
 		if(response.find("uciok") == std::string::npos)
 			throw std::runtime_error("stockfish did not respond correctly to UCI");
+		
+		#ifdef DEBUG
+		std::cout << "ctor Stockfish...\n";
+		#endif
 	}
 
 	~Stockfish()
 	{
-		close(m_stockfishInput[1]);
-		close(m_stockfishOutput[0]);
+		close(m_pipe1[WRITE]);
+		close(m_pipe2[READ]);
 		
 		// wait for stockfish process
 		waitpid(m_pid, nullptr, 0);
+		
+		#ifdef DEBUG
+		std::cout << "dtor Stockfish...\n";
+		#endif
 	}
-	
+
 	void sendCommand(const std::string& command)
 	{
 		std::string cmd = command + "\n";
 		
-		if(write(m_stockfishInput[1], cmd.c_str(), cmd.size()) == -1)
+		if(write(m_pipe1[WRITE], cmd.c_str(), cmd.size()) == -1)
 		{
 			perror("error writing to stockfish");
 			throw std::runtime_error("failed to send command to stockfish");
@@ -92,10 +105,10 @@ public:
 	std::string getResponse()
 	{
 		char buffer[256];
-		std::string response;
 		ssize_t bytesRead;
+		std::string response;
 		
-		while((bytesRead = read(m_stockfishOutput[0], buffer, sizeof(buffer) - 1)) > 0)
+		while((bytesRead = read(m_pipe2[READ], buffer, sizeof(buffer) - 1)) > 0)
 		{
 			buffer[bytesRead] = '\0';
 			response += buffer;
@@ -118,7 +131,11 @@ public:
 	}
 	
 private:
-	int m_stockfishInput[2];
-	int m_stockfishOutput[2];
 	pid_t m_pid;
+
+	// for parent process
+	int m_pipe1[2];
+	
+	// for child process - stockifh
+	int m_pipe2[2];
 };
