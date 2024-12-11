@@ -24,7 +24,7 @@ int main(void)
 	resp = engine.getResponse();
 	
 	std::cout << "resp.size() = " << resp.size() << "\n";
-	std::cout << "resp = " << resp << "\n";
+	std::cout << "resp = " << resp;
 	
 	resp.clear();
 	
