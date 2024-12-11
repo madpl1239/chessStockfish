@@ -11,7 +11,7 @@
 
 int main(void)
 {
-	Stockfish engine("stockfish");
+	Stockfish engine("./stockfish");
 	
 	engine.sendCommand("uci");
 	std::string resp = engine.getResponse();
