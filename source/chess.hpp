@@ -66,21 +66,27 @@ public:
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
+			#ifdef DEBUG
+			std::cout << "mouse pressed...\n";
+			#endif
+			
 			for(int i = 0; i < 32; ++i)
 			{
 				if(m_pieces[i].getGlobalBounds().contains(mousePos.x, mousePos.y))
 				{
 					m_draggingPiece = &m_pieces[i];
 					m_draggingStartPos = m_draggingPiece->getPosition();
-					m_draggingBoardPos = sf::Vector2i(int(mousePos.x / TILE_SIZE), int(mousePos.y / TILE_SIZE));
+					m_draggingBoardPos = sf::Vector2i(mousePos.x / TILE_SIZE, mousePos.y / TILE_SIZE);
+					
+					#ifdef DEBUG
+					std::cout << "m_draggingBoardPos = ("
+							  << m_draggingBoardPos.x << ", "
+							  << m_draggingBoardPos.y << ")\n";
+					#endif
 					
 					break;
 				}
 			}
-			
-			#ifdef DEBUG
-			std::cout << "mouse pressed...\n";
-			#endif
 		}
 		
 		if(event.type == sf::Event::MouseButtonReleased and event.mouseButton.button == sf::Mouse::Left)
@@ -92,6 +98,7 @@ public:
 				if(isValidMove(m_draggingBoardPos, dropPos))
 					m_draggingPiece->setPosition(dropPos.x * TILE_SIZE + TILE_SIZE / 2, dropPos.y * TILE_SIZE + TILE_SIZE / 2);
 				else
+					// incorrect move, reverse to old position
 					m_draggingPiece->setPosition(m_draggingStartPos);
 				
 				m_draggingPiece = nullptr;
