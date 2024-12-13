@@ -9,11 +9,7 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <thread>
-
-#define DEBUG 1
-
-#define READ 0
-#define WRITE 1
+#include "defines.hpp"
 
 
 class Stockfish

@@ -35,10 +35,8 @@ public:
 
 	void setupBoard()
 	{
-		m_board = {
-			"rnbqkbnr", "pppppppp", "........", "........",
-			"........", "........", "PPPPPPPP", "RNBQKBNR"
-		};
+		m_board = {"rnbqkbnr", "pppppppp", "........", "........",
+					"........", "........", "PPPPPPPP", "RNBQKBNR"};
 		
 		int index = 0;
 		for(int y = 0; y < 8; ++y)
@@ -49,11 +47,13 @@ public:
 				
 				if(piece != '.')
 				{
-					int color = (piece >= 'a' && piece <= 'z') ? 0 : 1;
+					// if piece is letter then color is 0
+					int color = (piece >= 'a' and piece <= 'z') ? 0 : 1;
 					int type = m_figureMap[std::string(1, std::toupper(piece))];
 					
 					m_pieces[index].setTextureRect(sf::IntRect(type * TILE_SIZE, color * TILE_SIZE, TILE_SIZE, TILE_SIZE));
 					m_pieces[index].setPosition(x * TILE_SIZE + TILE_SIZE / 2, y * TILE_SIZE + TILE_SIZE / 2);
+					m_pieces[index].setOrigin(0, 1);
 					++index;
 				}
 			}
@@ -64,7 +64,7 @@ public:
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		
-		if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
 			for(int i = 0; i < 32; ++i)
 			{
@@ -72,14 +72,18 @@ public:
 				{
 					m_draggingPiece = &m_pieces[i];
 					m_draggingStartPos = m_draggingPiece->getPosition();
-					m_draggingBoardPos = sf::Vector2i(mousePos.x / TILE_SIZE, mousePos.y / TILE_SIZE);
+					m_draggingBoardPos = sf::Vector2i(int(mousePos.x / TILE_SIZE), int(mousePos.y / TILE_SIZE));
 					
 					break;
 				}
 			}
+			
+			#ifdef DEBUG
+			std::cout << "mouse pressed...\n";
+			#endif
 		}
 		
-		if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+		if(event.type == sf::Event::MouseButtonReleased and event.mouseButton.button == sf::Mouse::Left)
 		{
 			if(m_draggingPiece)
 			{
@@ -92,6 +96,10 @@ public:
 				
 				m_draggingPiece = nullptr;
 			}
+			
+			#ifdef DEBUG
+			std::cout << "mouse released...\n";
+			#endif
 		}
 		
 		if(event.type == sf::Event::MouseMoved)
@@ -157,7 +165,7 @@ public:
 
 	bool isValidMove(sf::Vector2i start, sf::Vector2i end)
 	{
-		return start != end && end.x >= 0 && end.x < 8 && end.y >= 0 && end.y < 8;
+		return start != end and end.x >= 0 and end.x < 8 and end.y >= 0 and end.y < 8;
 	}
 
 private:

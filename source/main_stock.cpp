@@ -7,6 +7,7 @@
  */
 #include <iostream>
 #include "stockHandle.hpp"
+#include "defines.hpp"
 #include "chess.hpp"
 
 
@@ -44,7 +45,7 @@ int main(void)
 			if(event.type == sf::Event::Closed)
 				window.close();
 			
-			// chess.handleMouseEvent(event, window);
+			chess.handleMouseEvent(event, window);
 		}
 		
 		window.clear();
