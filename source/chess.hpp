@@ -109,8 +109,10 @@ public:
 		if(m_pieceSelected and m_selectedPieceIndex != -1)
 		{
 			sf::RectangleShape highlight(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-			highlight.setFillColor(sf::Color(255, 255, 0, 128)); // Półprzezroczysty żółty
-			highlight.setPosition(m_selectedTile.x * TILE_SIZE, m_selectedTile.y * TILE_SIZE);
+			
+			highlight.setFillColor(sf::Color(0, 255, 0, 64));
+			highlight.setPosition(m_selectedTile.x * TILE_SIZE /*+ TILE_SIZE / 2*/,
+									m_selectedTile.y * TILE_SIZE /*+ TILE_SIZE / 2*/);
 			
 			window.draw(highlight);
 		}
