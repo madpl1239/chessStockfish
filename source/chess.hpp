@@ -31,7 +31,7 @@ public:
 		for(int i = 0; i < 32; ++i)
 		{
 			m_pieces[i].setTexture(m_piecesTexture);
-			m_pieces[i].setOrigin(0, 0);
+			m_pieces[i].setOrigin(0, 1);
 		}
 		
 		m_figureMap = {{"R", 0}, {"N", 1}, {"B", 2}, {"Q", 3}, {"K", 4}, {"P", 5}};
