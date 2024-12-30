@@ -111,7 +111,7 @@ public:
 		{
 			sf::RectangleShape highlight(sf::Vector2f(TILE_SIZE, TILE_SIZE));
 			
-			highlight.setFillColor(sf::Color(0, 255, 0, 64));
+			highlight.setFillColor(sf::Color(0x00, 0x80, 0x00, 0x80));
 			highlight.setPosition(m_selectedTile.x * TILE_SIZE + OFFSET,
 								  m_selectedTile.y * TILE_SIZE + OFFSET);
 			
