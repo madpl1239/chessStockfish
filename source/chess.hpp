@@ -29,7 +29,10 @@ public:
 		
 		// initialization of pieces
 		for(int i = 0; i < 32; ++i)
+		{
 			m_pieces[i].setTexture(m_piecesTexture);
+			m_pieces[i].setOrigin(0, 0);
+		}
 		
 		m_figureMap = {{"R", 0}, {"N", 1}, {"B", 2}, {"Q", 3}, {"K", 4}, {"P", 5}};
 	}
@@ -56,8 +59,7 @@ public:
 					m_pieces[index].setTextureRect(sf::IntRect(type * TILE_SIZE, color * TILE_SIZE,
 																TILE_SIZE, TILE_SIZE));
 					
-					m_pieces[index].setPosition(x * TILE_SIZE + TILE_SIZE / 2,
-												 y * TILE_SIZE + TILE_SIZE / 2);
+					m_pieces[index].setPosition(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
 					
 					++index;
 				}
@@ -68,7 +70,7 @@ public:
 	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		sf::Vector2i tile(mousePos.x / TILE_SIZE, mousePos.y / TILE_SIZE);
+		sf::Vector2i tile((mousePos.x - OFFSET) / TILE_SIZE, (mousePos.y - OFFSET) / TILE_SIZE);
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
@@ -88,9 +90,8 @@ public:
 				// attempt to make a move
 				if(isValidMove(m_selectedTile, tile))
 				{
-					m_pieces[m_selectedPieceIndex].setPosition(tile.x * TILE_SIZE + TILE_SIZE / 2,
-															   tile.y * TILE_SIZE + TILE_SIZE / 2);
-					
+					m_pieces[m_selectedPieceIndex].setPosition(tile.x * TILE_SIZE + OFFSET,
+															   tile.y * TILE_SIZE + OFFSET);
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
 				}
@@ -111,8 +112,8 @@ public:
 			sf::RectangleShape highlight(sf::Vector2f(TILE_SIZE, TILE_SIZE));
 			
 			highlight.setFillColor(sf::Color(0, 255, 0, 64));
-			highlight.setPosition(m_selectedTile.x * TILE_SIZE /*+ TILE_SIZE / 2*/,
-									m_selectedTile.y * TILE_SIZE /*+ TILE_SIZE / 2*/);
+			highlight.setPosition(m_selectedTile.x * TILE_SIZE + OFFSET,
+								  m_selectedTile.y * TILE_SIZE + OFFSET);
 			
 			window.draw(highlight);
 		}
@@ -123,8 +124,8 @@ private:
 	{
 		for(int i = 0; i < 32; ++i)
 		{
-			if(m_pieces[i].getGlobalBounds().contains(tile.x * TILE_SIZE + TILE_SIZE / 2,
-														tile.y * TILE_SIZE + TILE_SIZE / 2))
+			if(m_pieces[i].getGlobalBounds().contains(tile.x * TILE_SIZE + OFFSET,
+														tile.y * TILE_SIZE + OFFSET))
 			{
 				return i;
 			}
