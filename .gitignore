@@ -1,5 +1,5 @@
-build
-resource
+build/
+resource/
 stockfish
 main.cpp
 stockTest
