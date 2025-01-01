@@ -2,6 +2,5 @@ build/
 stockfish
 main.cpp
 stockTest
-stockfish_interface.zip
 README.md
 LICENSE
