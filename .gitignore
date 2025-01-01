@@ -1,5 +1,4 @@
 build/
-resource/
 stockfish
 main.cpp
 stockTest
