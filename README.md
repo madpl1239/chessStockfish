@@ -12,7 +12,7 @@ To compile, you need to follow these steps:</br>
 - make
 - download and compile the stockfish engine:
 https://github.com/official-stockfish/Stockfish.git</br>
-- executable Stockfish file must be in our directory, in not copy it
+- executable Stockfish file must be in our directory (chessStockfish), in not copy it
 - move the executable file to the directory where this code is
 and run the compiled program with the working name stockTest.
 
