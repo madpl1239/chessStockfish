@@ -1,6 +1,7 @@
 ![alt text](chess.png)
 
-***This project is for linux systems only. It is a simple SFML based GUI that uses the stockfish engine.***
+***This project is for linux systems only. It is a simple SFML based GUI that uses the stockfish engine.***</br>
+***Project is still in progress.***
 </br></br>
 
 **Compilation**</br>
