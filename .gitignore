@@ -1,6 +1,5 @@
 build/
 stockfish
-main.cpp
 stockTest
 README.md
 LICENSE
