@@ -81,16 +81,15 @@ std::string goNewGame(Stockfish& engine)
 
 std::string getNextMove(Stockfish& engine, std::string& moves)
 {
-	// Przesyłanie pełnej historii ruchów
+	// sending full movement history
 	std::string command = "position startpos moves " + moves;
 	std::cout << "[DEBUG] Full move history: " << command << "\n";
 	engine.sendCommand(command);
 
-	// Wykonanie analizy
 	engine.sendCommand("go depth 3");
 	std::string response = engine.getResponse();
 
-	// Wyodrębnienie ruchu 'bestmove'
+	// extracting the 'bestmove' movement
 	size_t bestmoveIdx = response.find("bestmove");
 	if(bestmoveIdx != std::string::npos)
 	{
@@ -99,7 +98,7 @@ std::string getNextMove(Stockfish& engine, std::string& moves)
 								? response.substr(bestmoveIdx + 9, endIdx - (bestmoveIdx + 9))
 								: response.substr(bestmoveIdx + 9);
 		
-		// Dodanie ruchu Stockfisha do historii
+		// adding Stockfish Movement to History
 		moves += " " + stockfishMove;
 		
 		return stockfishMove;
@@ -116,8 +115,7 @@ int main(void)
 		Stockfish engine("./stockfish");
 		
 		engine.sendCommand("uci");
-		std::string resp = engine.getResponse();
-		if(resp.find("uciok") == std::string::npos)
+		if(engine.getResponse().find("uciok") == std::string::npos)
 		{
 			throw std::runtime_error("Stockfish did not respond correctly to UCI command");
 		}
@@ -129,7 +127,7 @@ int main(void)
 		engine.sendCommand("ucinewgame");
 		engine.sendCommand("isready");
 		if(engine.getResponse().find("readyok") == std::string::npos)
-			throw std::runtime_error("Stockfish nie jest gotowy do gry");
+			throw std::runtime_error("Stockfish is not ready to play");
 		
 		for(int i = 0; i < 4; ++i)
 		{
@@ -137,10 +135,10 @@ int main(void)
 			std::cout << "Enter move (e.g. e2e4): ";
 			std::cin >> playerMove;
 			
-			// Dodanie ruchu gracza do historii
+			// adding player movement to history
 			moves += (moves.empty() ? "" : " ") + playerMove;
 			
-			// Pobranie ruchu Stockfisha
+			// Stockfish move download
 			std::string stockfishMove = getNextMove(engine, moves);
 			if(stockfishMove == "response error")
 			{
