@@ -83,6 +83,7 @@ std::string getNextMove(Stockfish& engine, std::string& moves)
 {
 	// Przesyłanie pełnej historii ruchów
 	std::string command = "position startpos moves " + moves;
+	std::cout << "[DEBUG] Full move history: " << command << "\n";
 	engine.sendCommand(command);
 
 	// Wykonanie analizy
