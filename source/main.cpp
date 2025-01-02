@@ -8,9 +8,11 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "defines.hpp"
+#include "stockHandle.hpp"
 
 sf::Sprite f[32]{};
-std::string position = "a2a4";
+std::string position = "e2e4";
+
 
 std::string toChess(sf::Vector2f piece)
 {
@@ -64,20 +66,83 @@ void move(std::string str)
 }
 
 
+std::string goNewGame(Stockfish& engine)
+{
+	engine.sendCommand("ucinewgame");
+	engine.sendCommand("isready");
+
+	std::string str = engine.getResponse();
+	if(str.find("readyok") == std::string::npos)
+		return "response error";
+
+	return "ok";
+}
+
+
+std::string getNextMove(Stockfish& engine, const std::string& moves)
+{
+	std::string command = "position startpos moves " + moves;
+	engine.sendCommand(command);
+	engine.sendCommand("go");
+
+	std::string response = engine.getResponse();
+	size_t n = response.find("bestmove");
+	if(n != std::string::npos)
+		return response.substr(n + 9, 4);
+
+	return "response error";
+}
+
+
 int main(void)
 {
-	sf::Vector2f vec{};
-	std::string str{};
+	try
+	{
+		Stockfish engine("./stockfish");
+		
+		engine.sendCommand("uci");
+		std::string resp = engine.getResponse();
+		if(resp.find("uciok") == std::string::npos)
+		{
+			throw std::runtime_error("Stockfish did not respond correctly to UCI command");
+		}
+		
+		std::cout << "Stockfish initialized successfully\n";
+		
+		// new game started
+		std::string moves = "";
+		std::string response = goNewGame(engine);
+		if(response == "response error")
+			throw std::runtime_error("Error when starting a new game");
+		
+		std::cout << "New game started. Stockfish response: " << response << "\n";
+		
+		for (int i = 0; i < 4; ++i)
+		{
+			std::cout << "Enter move (e.g. e2e4): ";
+			std::string move;
+			std::cin >> move;
+			
+			moves += move + " ";
+			response = getNextMove(engine, moves);
+			if(response == "response error")
+			{
+				std::cerr << "Error: Failed to get next move from Stockfish\n";
+				continue;
+			}
+			
+			std::cout << "Stockfish suggests movement: " << response << "\n";
+		}
+		
+		std::cout << "done.\n";
+	}
 	
-	std::cout << "testing toCoords()\n";
-	std::cout << "enter two chars: ";
-	std::cin >> str;
-	
-	vec = toCoords(str[0], str[1]);
-	
-	std::cout << "sf_vector(" << vec.x << ", " << vec.y << ") --> "
-			  << "board_coords(" << vec.x / TILE_SIZE << ", " << vec.y / TILE_SIZE
-			  << ")\n";
-	
+	catch(const std::exception &e)
+	{
+		std::cerr << "error: " << e.what() << "\n";
+		
+		return -1;
+	}
+
 	return 0;
 }
