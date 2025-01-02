@@ -82,6 +82,10 @@ std::string goNewGame(Stockfish& engine)
 std::string getNextMove(Stockfish& engine, const std::string& moves)
 {
 	std::string command = "position startpos moves " + moves;
+	
+	// Pełna historia ruchów
+	std::cout << "[DEBUG] Sending command: " << command << std::endl;
+
 	engine.sendCommand(command);
 	engine.sendCommand("go");
 
