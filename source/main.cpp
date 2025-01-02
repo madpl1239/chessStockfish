@@ -147,7 +147,7 @@ int main(void)
 				break;
 			}
 			
-			std::cout << "Stockfish suggests movement: " << response << "\n";
+			std::cout << "Stockfish suggests movement: " << stockfishMove << "\n";
 		}
 		
 		std::cout << "done.\n";
