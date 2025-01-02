@@ -79,20 +79,30 @@ std::string goNewGame(Stockfish& engine)
 }
 
 
-std::string getNextMove(Stockfish& engine, const std::string& moves)
+std::string getNextMove(Stockfish& engine, std::string& moves)
 {
+	// Przesyłanie pełnej historii ruchów
 	std::string command = "position startpos moves " + moves;
-	
-	// Pełna historia ruchów
-	std::cout << "[DEBUG] Sending command: " << command << std::endl;
-
 	engine.sendCommand(command);
-	engine.sendCommand("go");
 
+	// Wykonanie analizy
+	engine.sendCommand("go depth 3");
 	std::string response = engine.getResponse();
-	size_t n = response.find("bestmove");
-	if(n != std::string::npos)
-		return response.substr(n + 9, 4);
+
+	// Wyodrębnienie ruchu 'bestmove'
+	size_t bestmoveIdx = response.find("bestmove");
+	if(bestmoveIdx != std::string::npos)
+	{
+		size_t endIdx = response.find(' ', bestmoveIdx + 9);
+		std::string stockfishMove = (endIdx != std::string::npos) 
+								? response.substr(bestmoveIdx + 9, endIdx - (bestmoveIdx + 9))
+								: response.substr(bestmoveIdx + 9);
+		
+		// Dodanie ruchu Stockfisha do historii
+		moves += " " + stockfishMove;
+		
+		return stockfishMove;
+	}
 
 	return "response error";
 }
@@ -115,24 +125,26 @@ int main(void)
 		
 		// new game started
 		std::string moves = "";
-		std::string response = goNewGame(engine);
-		if(response == "response error")
-			throw std::runtime_error("Error when starting a new game");
+		engine.sendCommand("ucinewgame");
+		engine.sendCommand("isready");
+		if(engine.getResponse().find("readyok") == std::string::npos)
+			throw std::runtime_error("Stockfish nie jest gotowy do gry");
 		
-		std::cout << "New game started. Stockfish response: " << response << "\n";
-		
-		for (int i = 0; i < 4; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
+			std::string playerMove;
 			std::cout << "Enter move (e.g. e2e4): ";
-			std::string move;
-			std::cin >> move;
+			std::cin >> playerMove;
 			
-			moves += move + " ";
-			response = getNextMove(engine, moves);
-			if(response == "response error")
+			// Dodanie ruchu gracza do historii
+			moves += (moves.empty() ? "" : " ") + playerMove;
+			
+			// Pobranie ruchu Stockfisha
+			std::string stockfishMove = getNextMove(engine, moves);
+			if(stockfishMove == "response error")
 			{
-				std::cerr << "Error: Failed to get next move from Stockfish\n";
-				continue;
+				std::cerr << "Error: Failed to get move from Stockfish\n";
+				break;
 			}
 			
 			std::cout << "Stockfish suggests movement: " << response << "\n";
