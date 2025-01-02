@@ -100,7 +100,7 @@ public:
 
 	std::string getResponse()
 	{
-		char buffer[256];
+		char buffer[1024];  // Zwiększ rozmiar bufora
 		ssize_t bytesRead;
 		std::string response;
 		
@@ -109,6 +109,7 @@ public:
 			buffer[bytesRead] = '\0';
 			response += buffer;
 			
+			// Zakończ, jeśli odpowiedź zawiera kluczowe słowa
 			if(response.find("uciok") != std::string::npos or 
 				response.find("readyok") != std::string::npos or 
 				response.find("bestmove") != std::string::npos)
@@ -118,10 +119,10 @@ public:
 		}
 		
 		if(bytesRead == -1)
-		{
-			perror("error reading from stockfish");
 			throw std::runtime_error("could not read response from stockfish");
-		}
+		
+		// Logowanie pełnej odpowiedzi
+		std::cout << "[DEBUG] Full response: " << response << std::endl;
 		
 		return response;
 	}
