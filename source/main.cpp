@@ -10,9 +10,6 @@
 #include "defines.hpp"
 #include "stockHandle.hpp"
 
-sf::Sprite f[32]{};
-std::string position = "e2e4";
-
 
 std::string toChess(sf::Vector2f piece)
 {
@@ -34,7 +31,7 @@ sf::Vector2f toCoords(char a, char b)
 }
 
 
-void move(std::string str, std::string& globalPos)
+void move(std::string str, std::string& globalPos, sf::Sprite f[])
 {
 	sf::Vector2f oldPos = toCoords(str[0], str[1]);
 	sf::Vector2f newPos = toCoords(str[2], str[3]);
@@ -50,19 +47,19 @@ void move(std::string str, std::string& globalPos)
 	// castling if the king not moved yet
 	if(str == "e1g1") // king's move
 		if(globalPos.find("e1") == -1) 
-			move("h1f1", globalPos); // rook's move
+			move("h1f1", globalPos, f); // rook's move
 
 	if(str == "e8g8")
 		if(globalPos.find("e8") == -1)
-			move("h8f8", globalPos);
+			move("h8f8", globalPos, f);
 
 	if(str == "e1c1")
 		if(globalPos.find("e1") == -1) 
-			move("a1d1", globalPos);
+			move("a1d1", globalPos, f);
 
 	if(str == "e8c8") 
 		if(globalPos.find("e8") == -1)
-			move("a8d8", globalPos);
+			move("a8d8", globalPos, f);
 }
 
 
