@@ -1,6 +1,8 @@
 /*
  * utils.cpp
  * 
+ * Definition of several utility functions.
+ * 
  * 03-01-2025 by madpl
  */
 #include "utils.hpp"
@@ -26,7 +28,7 @@ sf::Vector2f toCoords(char a, char b)
 }
 
 
-void move(std::string str, std::string& globalPos, sf::Sprite f[])
+void move(sf::Sprite f[], std::string str, std::string& globalPos)
 {
 	sf::Vector2f oldPos = toCoords(str[0], str[1]);
 	sf::Vector2f newPos = toCoords(str[2], str[3]);
@@ -42,19 +44,19 @@ void move(std::string str, std::string& globalPos, sf::Sprite f[])
 	// castling if the king not moved yet
 	if(str == "e1g1") // king's move
 		if(globalPos.find("e1") == -1) 
-			move("h1f1", globalPos, f); // rook's move
+			move(f, "h1f1", globalPos); // rook's move
 
 	if(str == "e8g8")
 		if(globalPos.find("e8") == -1)
-			move("h8f8", globalPos, f);
+			move(f, "h8f8", globalPos);
 
 	if(str == "e1c1")
 		if(globalPos.find("e1") == -1) 
-			move("a1d1", globalPos, f);
+			move(f, "a1d1", globalPos);
 
 	if(str == "e8c8") 
 		if(globalPos.find("e8") == -1)
-			move("a8d8", globalPos, f);
+			move(f, "a8d8", globalPos);
 }
 
 

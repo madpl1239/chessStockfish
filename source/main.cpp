@@ -1,7 +1,7 @@
 /*
  * main.cpp
  * 
- * Testing few functions.
+ * Testing few functions for my GUI Chess.
  * 
  * 01-01-2025 by madpl
  */
@@ -16,9 +16,7 @@ int main(void)
 		
 		engine.sendCommand("uci");
 		if(engine.getResponse().find("uciok") == std::string::npos)
-		{
 			throw std::runtime_error("Stockfish did not respond correctly to UCI command");
-		}
 		
 		std::cout << "Stockfish initialized successfully\n";
 		
@@ -43,6 +41,7 @@ int main(void)
 			if(stockfishMove == "response error")
 			{
 				std::cerr << "Error: Failed to get move from Stockfish\n";
+				
 				break;
 			}
 			

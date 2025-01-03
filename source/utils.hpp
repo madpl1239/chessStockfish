@@ -1,7 +1,7 @@
 /*
  * utils.hpp 
  * 
- * Declarations of utils functions.
+ * Declaration of utility functions.
  * 
  * 03-01-2025 by madpl
  */
@@ -14,6 +14,6 @@
 
 std::string toChess(sf::Vector2f piece);
 sf::Vector2f toCoords(char a, char b);
-void move(std::string str, std::string& globalPos, sf::Sprite f[]);
+void move(sf::Sprite f[], std::string str, std::string& globalPos);
 std::string goNewGame(Stockfish& engine);
 std::string getNextMove(Stockfish& engine, std::string& moves);
