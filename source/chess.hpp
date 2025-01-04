@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <cctype>
 #include "defines.hpp"
+#include "utils.hpp"
 
 
 class Chess
@@ -74,6 +75,8 @@ public:
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
+			std::string command = "";
+			
 			if(not m_pieceSelected)
 			{
 				// change of figure
@@ -83,6 +86,9 @@ public:
 				{
 					m_pieceSelected = true;
 					m_selectedTile = tile;
+					
+					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
+					command = toChess(oldPos);
 				}
 			}
 			else
@@ -94,6 +100,15 @@ public:
 															   tile.y * TILE_SIZE + OFFSET);
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
+					
+					sf::Vector2f newPos;
+					newPos.x = mousePos.x - OFFSET;
+					newPos.y = mousePos.y - OFFSET;
+					command += toChess(newPos);
+					
+					#ifdef DEBUG
+					std::cout << "[DEBUG] command = " << command << "\n";
+					#endif
 				}
 			}
 		}

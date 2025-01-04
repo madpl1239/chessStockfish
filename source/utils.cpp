@@ -13,7 +13,7 @@ std::string toChess(sf::Vector2f piece)
 	std::string str;
 	
 	str += static_cast<char>(97 + (piece.x / TILE_SIZE));
-	str += static_cast<char>(7 - (piece.y / TILE_SIZE) + 49);
+	str += static_cast<char>(8 - (piece.y / TILE_SIZE) + 49);
 	
 	return str;
 }

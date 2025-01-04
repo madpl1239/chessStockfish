@@ -1,7 +1,8 @@
 /*
  * main_stock.cpp
  *
- * Testing sockHandle class.
+ * Simple graphics user interface chess code that stockfish uses.
+ * I wrote this code as an exercise in C++ programming:))
  * 
  * 06-12-2024 by madpl
  */
@@ -15,29 +16,42 @@ int main(void)
 {
 	try
 	{
-		sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "Chess by madpl - 2024");
-		window.setPosition(sf::Vector2i(500, 200));
+		// logo
+		std::cout << "guichess by madpl 2024 started.\n";
+		
+		sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "guichess by madpl - 2024");
+		window.setPosition(sf::Vector2i(600, 200));
 		window.setFramerateLimit(60);
 		
 		Chess chess;
 		chess.setupBoard();
 		
 		Stockfish engine("./stockfish");
-		
 		engine.sendCommand("uci");
-		std::string resp = engine.getResponse();
+		if(engine.getResponse().find("uciok") == std::string::npos)
+		{
+			engine.sendCommand("quit");
+			std::cerr << "engine: not uciok!\n";
+			
+			return -1;
+		}
 		
-		std::cout << "resp.size() = " << resp.size() << "\n";
-		std::cout << "resp = " << resp << "\n";
+		// setting some additional engine options
+		engine.sendCommand("setoption name Skill Level value 5");
+		engine.sendCommand("setoption name Minimum Thinking Time value 3000");
+		engine.sendCommand("uci");
+		std::cout << engine.getResponse() << "\n";
 		
-		resp.clear();
 		engine.sendCommand("isready");
-		resp = engine.getResponse();
-		
-		std::cout << "resp.size() = " << resp.size() << "\n";
-		std::cout << "resp = " << resp;
-		
-		resp.clear();
+		if(engine.getResponse().find("readyok") != std::string::npos)
+			std::cout << "engine: readyok\n";
+		else
+		{
+			engine.sendCommand("quit");
+			std::cerr << "engine: not readyok!\n";
+			
+			return -1;
+		}
 		
 		while(window.isOpen())
 		{
@@ -45,7 +59,10 @@ int main(void)
 			while(window.pollEvent(event))
 			{
 				if(event.type == sf::Event::Closed)
+				{
+					engine.sendCommand("quit");
 					window.close();
+				}
 				
 				chess.handleMouseEvent(event, window);
 			}
@@ -55,7 +72,7 @@ int main(void)
 			window.display();
 		}
 		
-		std::cout << "\ndone.\n";
+		std::cout << "done.\n";
 	}
 	
 	catch(const std::exception &e)
