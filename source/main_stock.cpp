@@ -52,9 +52,6 @@ int main(void)
 			return -1;
 		}
 		
-		std::string positions{};
-		std::string stockfishMove{};
-		
 		Chess chess(engine);
 		chess.setupBoard();
 		
@@ -72,22 +69,6 @@ int main(void)
 				}
 				
 				chess.handleMouseEvent(event, window);
-				std::string command = chess.getCommand();
-				
-				#ifdef DEBUG
-				if(event.type == sf::Event::KeyPressed)
-				{
-					chess.move(command, positions);
-					positions += " " + command;
-					stockfishMove = getNextMove(engine, positions);
-					chess.move(stockfishMove, positions);
-					std::cout << "[DEBUG] player = " << command << "\n";
-					std::cout << "[DEBUG] engine = " << stockfishMove << "\n";
-					std::cout << "[DEBUG] positions = " << positions << "\n";
-					command.clear();
-					stockfishMove.clear();
-				}
-				#endif
 			}
 			
 			window.clear();

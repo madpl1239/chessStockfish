@@ -88,6 +88,10 @@ public:
 					
 					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
 					m_command = toChess(oldPos);
+					
+					#ifdef DEBUG
+					std::cout << "oldPos* = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
+					#endif
 				}
 			}
 			else
@@ -97,6 +101,7 @@ public:
 				{
 					m_pieces[m_selectedPieceIndex].setPosition(tile.x * TILE_SIZE + OFFSET,
 															   tile.y * TILE_SIZE + OFFSET);
+					
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
 					
@@ -104,6 +109,28 @@ public:
 					newPos.x = mousePos.x - OFFSET;
 					newPos.y = mousePos.y - OFFSET;
 					m_command += toChess(newPos);
+					
+					#ifdef DEBUG
+					std::cout << "newPos* = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+					#endif
+					
+					m_logic = false;
+					move(m_command, s_positions);
+					s_positions += " " + m_command;
+					
+					// computer move
+					m_stockfishMove = getNextMove(m_engine, s_positions);
+					#ifdef DEBUG
+					std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
+					#endif
+					m_logic = true;
+					move(m_stockfishMove, s_positions);
+					
+					m_command.clear();
+					m_stockfishMove.clear();
+					#ifdef DEBUG
+					std::cout << "s_positions = " << s_positions << "\n";
+					#endif
 				}
 			}
 		}
@@ -134,13 +161,22 @@ public:
 		sf::Vector2f oldPos = toCoords(str[0], str[1]);
 		sf::Vector2f newPos = toCoords(str[2], str[3]);
 		
-		for(int i = 0; i < 32; ++i)
-			if(m_pieces[i].getPosition() == newPos)
-				m_pieces[i].setPosition(-100, -100);
+		#ifdef DEBUG
+		if(m_logic)
+		{
+			std::cout << "<< engine moves >>\n";
+			std::cout << "oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
+			std::cout << "newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+		}
+		#endif
 		
-		for(int i = 0; i < 32; ++i)
-			if(m_pieces[i].getPosition() == oldPos)
-				m_pieces[i].setPosition(newPos);
+		for(auto& piece : m_pieces)
+			if(piece.getPosition() == newPos)
+				piece.setPosition(-100, -100);
+		
+		for(auto& piece : m_pieces)
+			if(piece.getPosition() == oldPos)
+				piece.setPosition(newPos);
 		
 		// castling if the king not moved yet
 		if(str == "e1g1") // king's move
@@ -160,11 +196,6 @@ public:
 				move("a8d8", globalPos);
 	}
 	
-	std::string getCommand() const
-	{
-		return m_command;
-	}
-
 private:
 	std::string toChess(sf::Vector2f piece)
 	{
@@ -176,10 +207,10 @@ private:
 		return str;
 	}
 
-	sf::Vector2f toCoords(char a, char b)
+	sf::Vector2f toCoords(char col, char row)
 	{
-		int x = static_cast<int>(a) - 97;
-		int y = 7 - static_cast<int>(b) + 49;
+		int x = static_cast<int>(col) - 'a';
+		int y = 8 - (static_cast<int>(row) - '1');
 		
 		return sf::Vector2f(x * TILE_SIZE, y * TILE_SIZE);
 	}
@@ -212,8 +243,11 @@ private:
 	std::map<std::string, int> m_figureMap{};	// mapping a figure to an atlas index
 	std::vector<std::string> m_board{};			// position in FEN notation
 	std::string m_command{};					// last command by player
+	std::string m_stockfishMove{};				// last respond from engine
+	inline static std::string s_positions{};	// all positions for uci
 
 	sf::Vector2i m_selectedTile{};			// selected position
 	int m_selectedPieceIndex = -1;			// index of the selected figure (-1 means none)
 	bool m_pieceSelected = false;			// has a figure been selected?
+	bool m_logic = false;
 };
