@@ -23,9 +23,6 @@ int main(void)
 		window.setPosition(sf::Vector2i(600, 200));
 		window.setFramerateLimit(60);
 		
-		Chess chess;
-		chess.setupBoard();
-		
 		Stockfish engine("./stockfish");
 		engine.sendCommand("uci");
 		if(engine.getResponse().find("uciok") == std::string::npos)
@@ -52,6 +49,9 @@ int main(void)
 			
 			return -1;
 		}
+		
+		Chess chess(engine);
+		chess.setupBoard();
 		
 		while(window.isOpen())
 		{
