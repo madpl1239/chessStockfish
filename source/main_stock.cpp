@@ -79,12 +79,13 @@ int main(void)
 				{
 					chess.move(command, positions);
 					positions += " " + command;
-					stockfishMove.clear();
 					stockfishMove = getNextMove(engine, positions);
 					chess.move(stockfishMove, positions);
-					std::cout << "[DEBUG] command = " << command << "\n";
+					std::cout << "[DEBUG] player = " << command << "\n";
+					std::cout << "[DEBUG] engine = " << stockfishMove << "\n";
 					std::cout << "[DEBUG] positions = " << positions << "\n";
 					command.clear();
+					stockfishMove.clear();
 				}
 				#endif
 			}

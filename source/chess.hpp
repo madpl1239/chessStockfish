@@ -104,10 +104,6 @@ public:
 					newPos.x = mousePos.x - OFFSET;
 					newPos.y = mousePos.y - OFFSET;
 					m_command += toChess(newPos);
-					
-					#ifdef DEBUG
-					std::cout << "[DEBUG] command = " << m_command << "\n";
-					#endif
 				}
 			}
 		}

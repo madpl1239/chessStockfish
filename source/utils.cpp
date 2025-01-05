@@ -29,8 +29,7 @@ std::string goNewGame(Stockfish& engine)
 std::string getNextMove(Stockfish& engine, std::string& moves)
 {
 	// sending full movement history
-	std::string command = "position startpos moves " + moves;
-	std::cout << "[DEBUG] Full move history: " << command << "\n";
+	std::string command = "position startpos moves" + moves;
 	engine.sendCommand(command);
 
 	engine.sendCommand("go depth 2");
