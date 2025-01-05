@@ -12,8 +12,5 @@
 #include "defines.hpp"
 #include "stockHandle.hpp"
 
-std::string toChess(sf::Vector2f piece);
-sf::Vector2f toCoords(char a, char b);
-void move(sf::Sprite f[], std::string str, std::string& globalPos);
 std::string goNewGame(Stockfish& engine);
 std::string getNextMove(Stockfish& engine, std::string& moves);
