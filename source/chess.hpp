@@ -115,16 +115,16 @@ public:
 					#endif
 					
 					m_logic = false;
-					move(m_command, s_positions);
+					move(m_command);
 					s_positions += " " + m_command;
 					
-					// computer move
+					// stockfish move
 					m_stockfishMove = getNextMove(m_engine, s_positions);
 					#ifdef DEBUG
 					std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
 					#endif
 					m_logic = true;
-					move(m_stockfishMove, s_positions);
+					move(m_stockfishMove);
 					
 					m_command.clear();
 					m_stockfishMove.clear();
@@ -156,10 +156,15 @@ public:
 		}
 	}
 	
-	void move(std::string str, std::string& globalPos)
+	void move(std::string str)
 	{
 		sf::Vector2f oldPos = toCoords(str[0], str[1]);
 		sf::Vector2f newPos = toCoords(str[2], str[3]);
+		
+		oldPos.x += OFFSET;
+		oldPos.y += OFFSET;
+		newPos.x += OFFSET;
+		newPos.y += OFFSET;
 		
 		#ifdef DEBUG
 		if(m_logic)
@@ -180,22 +185,22 @@ public:
 		
 		// castling if the king not moved yet
 		if(str == "e1g1") // king's move
-			if(globalPos.find("e1") == -1) 
-				move("h1f1", globalPos); // rook's move
+			if(s_positions.find("e1") == -1) 
+				move("h1f1"); // rook's move
 		
 		if(str == "e8g8")
-			if(globalPos.find("e8") == -1)
-				move("h8f8", globalPos);
+			if(s_positions.find("e8") == -1)
+				move("h8f8");
 		
 		if(str == "e1c1")
-			if(globalPos.find("e1") == -1) 
-				move("a1d1", globalPos);
+			if(s_positions.find("e1") == -1) 
+				move("a1d1");
 		
 		if(str == "e8c8") 
-			if(globalPos.find("e8") == -1)
-				move("a8d8", globalPos);
+			if(s_positions.find("e8") == -1)
+				move("a8d8");
 	}
-	
+
 private:
 	std::string toChess(sf::Vector2f piece)
 	{
