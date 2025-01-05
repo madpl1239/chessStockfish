@@ -21,7 +21,7 @@ public:
 	Chess(Stockfish& engine):
 		m_engine(engine)
 	{
-		if(not m_boardTexture.loadFromFile("./resource/board2.png"))
+		if(not m_boardTexture.loadFromFile("./resource/board.png"))
 			throw std::runtime_error("Could not load board.png");
 		
 		if(not m_piecesTexture.loadFromFile("./resource/figures.png"))
@@ -87,7 +87,7 @@ public:
 					m_selectedTile = tile;
 					
 					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
-					command = toChess(oldPos);
+					m_command = toChess(oldPos);
 				}
 			}
 			else
@@ -103,10 +103,10 @@ public:
 					sf::Vector2f newPos;
 					newPos.x = mousePos.x - OFFSET;
 					newPos.y = mousePos.y - OFFSET;
-					command += toChess(newPos);
+					m_command += toChess(newPos);
 					
 					#ifdef DEBUG
-					std::cout << "[DEBUG] command = " << command << "\n";
+					std::cout << "[DEBUG] command = " << m_command << "\n";
 					#endif
 				}
 			}
@@ -131,6 +131,42 @@ public:
 			
 			window.draw(highlight);
 		}
+	}
+	
+	void move(std::string str, std::string& globalPos)
+	{
+		sf::Vector2f oldPos = toCoords(str[0], str[1]);
+		sf::Vector2f newPos = toCoords(str[2], str[3]);
+		
+		for(int i = 0; i < 32; ++i)
+			if(m_pieces[i].getPosition() == newPos)
+				m_pieces[i].setPosition(-100, -100);
+		
+		for(int i = 0; i < 32; ++i)
+			if(m_pieces[i].getPosition() == oldPos)
+				m_pieces[i].setPosition(newPos);
+		
+		// castling if the king not moved yet
+		if(str == "e1g1") // king's move
+			if(globalPos.find("e1") == -1) 
+				move("h1f1", globalPos); // rook's move
+		
+		if(str == "e8g8")
+			if(globalPos.find("e8") == -1)
+				move("h8f8", globalPos);
+		
+		if(str == "e1c1")
+			if(globalPos.find("e1") == -1) 
+				move("a1d1", globalPos);
+		
+		if(str == "e8c8") 
+			if(globalPos.find("e8") == -1)
+				move("a8d8", globalPos);
+	}
+	
+	std::string getCommand() const
+	{
+		return m_command;
 	}
 
 private:
@@ -171,37 +207,6 @@ private:
 		return start != end and end.x >= 0 and end.x < 8 and end.y >= 0 and end.y < 8;
 	}
 	
-	void move(std::string str, std::string& globalPos)
-	{
-		sf::Vector2f oldPos = toCoords(str[0], str[1]);
-		sf::Vector2f newPos = toCoords(str[2], str[3]);
-		
-		for(int i = 0; i < 32; ++i)
-			if(m_pieces[i].getPosition() == newPos)
-				m_pieces[i].setPosition(-100, -100);
-		
-		for(int i = 0; i < 32; ++i)
-			if(m_pieces[i].getPosition() == oldPos)
-				m_pieces[i].setPosition(newPos);
-		
-		// castling if the king not moved yet
-		if(str == "e1g1") // king's move
-			if(globalPos.find("e1") == -1) 
-				move("h1f1", globalPos); // rook's move
-		
-		if(str == "e8g8")
-			if(globalPos.find("e8") == -1)
-				move("h8f8", globalPos);
-		
-		if(str == "e1c1")
-			if(globalPos.find("e1") == -1) 
-				move("a1d1", globalPos);
-		
-		if(str == "e8c8") 
-			if(globalPos.find("e8") == -1)
-				move("a8d8", globalPos);
-	}
-
 private:
 	Stockfish& m_engine;
 	sf::Texture m_boardTexture{};
@@ -210,7 +215,7 @@ private:
 	sf::Sprite m_pieces[32]{};					// maximum 32 figures
 	std::map<std::string, int> m_figureMap{};	// mapping a figure to an atlas index
 	std::vector<std::string> m_board{};			// position in FEN notation
-	std::string command{};
+	std::string m_command{};					// last command by player
 
 	sf::Vector2i m_selectedTile{};			// selected position
 	int m_selectedPieceIndex = -1;			// index of the selected figure (-1 means none)

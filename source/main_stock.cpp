@@ -10,6 +10,7 @@
 #include "stockHandle.hpp"
 #include "defines.hpp"
 #include "chess.hpp"
+#include "utils.hpp"
 
 
 int main(void)
@@ -22,6 +23,7 @@ int main(void)
 		sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "guichess by madpl - 2024");
 		window.setPosition(sf::Vector2i(600, 200));
 		window.setFramerateLimit(60);
+		window.setKeyRepeatEnabled(false);
 		
 		Stockfish engine("./stockfish");
 		engine.sendCommand("uci");
@@ -50,8 +52,13 @@ int main(void)
 			return -1;
 		}
 		
+		std::string positions{};
+		std::string stockfishMove{};
+		
 		Chess chess(engine);
 		chess.setupBoard();
+		
+		goNewGame(engine);
 		
 		while(window.isOpen())
 		{
@@ -65,6 +72,21 @@ int main(void)
 				}
 				
 				chess.handleMouseEvent(event, window);
+				std::string command = chess.getCommand();
+				
+				#ifdef DEBUG
+				if(event.type == sf::Event::KeyPressed)
+				{
+					chess.move(command, positions);
+					positions += " " + command;
+					stockfishMove.clear();
+					stockfishMove = getNextMove(engine, positions);
+					chess.move(stockfishMove, positions);
+					std::cout << "[DEBUG] command = " << command << "\n";
+					std::cout << "[DEBUG] positions = " << positions << "\n";
+					command.clear();
+				}
+				#endif
 			}
 			
 			window.clear();

@@ -70,7 +70,7 @@ public:
 			throw std::runtime_error("stockfish did not respond correctly to UCI");
 		
 		#ifdef DEBUG
-		std::cout << "ctor Stockfish...\n";
+		std::cout << "[DEBUG] ctor Stockfish...\n";
 		#endif
 	}
 
@@ -83,7 +83,7 @@ public:
 		waitpid(m_pid, nullptr, 0);
 		
 		#ifdef DEBUG
-		std::cout << "dtor Stockfish...\n";
+		std::cout << "[DEBUG] dtor Stockfish...\n";
 		#endif
 	}
 

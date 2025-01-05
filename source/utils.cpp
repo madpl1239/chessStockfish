@@ -17,6 +17,11 @@ std::string goNewGame(Stockfish& engine)
 	if(str.find("readyok") == std::string::npos)
 		return "response error";
 
+	#ifdef DEBUG
+	std::cout << "[DEBUG] ucinewgame\n";
+	std::cout << "[DEBUG] readyok\n";
+	#endif	
+	
 	return "ok";
 }
 
@@ -28,7 +33,7 @@ std::string getNextMove(Stockfish& engine, std::string& moves)
 	std::cout << "[DEBUG] Full move history: " << command << "\n";
 	engine.sendCommand(command);
 
-	engine.sendCommand("go depth 3");
+	engine.sendCommand("go depth 2");
 	std::string response = engine.getResponse();
 
 	// extracting the 'bestmove' movement
