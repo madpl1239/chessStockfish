@@ -33,7 +33,7 @@ public:
 		for(int i = 0; i < 32; ++i)
 		{
 			m_pieces[i].setTexture(m_piecesTexture);
-			m_pieces[i].setOrigin(0, 1);
+			// m_pieces[i].setOrigin(0, 0);
 		}
 		
 		m_figureMap = {{"R", 0}, {"N", 1}, {"B", 2}, {"Q", 3}, {"K", 4}, {"P", 5}};
@@ -72,7 +72,7 @@ public:
 	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		sf::Vector2i tile((mousePos.x - OFFSET) / TILE_SIZE, (mousePos.y - OFFSET) / TILE_SIZE);
+		sf::Vector2f tile((mousePos.x - OFFSET) / TILE_SIZE, (mousePos.y - OFFSET) / TILE_SIZE);
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
@@ -112,6 +112,7 @@ public:
 					
 					#ifdef DEBUG
 					std::cout << "[DEBUG] player::newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+					std::cout << "[DEBUG] m_command = " << m_command << "\n";
 					#endif
 					
 					m_logic = false;
@@ -137,7 +138,7 @@ public:
 			}
 		}
 	}
-	
+
 	std::string goNewGame()
 	{
 		m_engine.sendCommand("ucinewgame");
@@ -154,7 +155,7 @@ public:
 		
 		return "ok";
 	}
-	
+
 	bool getNextMove()
 	{
 		// sending full movement history
@@ -182,6 +183,77 @@ public:
 		return false;
 	}
 
+	void move(std::string str)
+	{
+		int indexOldPos = getPieceAt(toCoords(str[0], str[1]) - sf::Vector2f(OFFSET, OFFSET));
+		int indexNewPos = getPieceAt(toCoords(str[2], str[3]) - sf::Vector2f(OFFSET, OFFSET));
+		
+		// lambda for equals
+		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 1)
+		{
+			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
+		};
+		
+		#ifdef DEBUG
+		// if(m_logic)
+		{
+			std::cout << "[DEBUG] move()::indexOldPos = " << indexOldPos << ")\n";
+			std::cout << "[DEBUG] move()::indexNewPos = " << indexNewPos << ")\n";
+		}
+		#endif
+		
+		/*
+		for(auto& piece : m_pieces)
+			if(arePositionsEqual(piece.getPosition(), newPos))
+				piece.setPosition(-500, -500);
+		*/
+			
+		for(int i = 0; i < 32; ++i)
+		{
+			if(arePositionsEqual(m_pieces[i].getPosition(), m_pieces[indexNewPos].getPosition()))
+				m_pieces[i].setPosition(-500, -500);
+		}
+		
+		/*
+		for(auto& piece : m_pieces)
+		{
+			if(arePositionsEqual(piece.getPosition(), oldPos))
+			{
+				piece.setPosition(newPos);
+				
+				#ifdef DEBUG
+				std::cout << "[DEBUG] in move():: for loop if(...)\n";
+				#endif
+			}
+		}
+		*/
+		
+		for(int i = 0; i < 32; ++i)
+		{
+			if(arePositionsEqual(m_pieces[i].getPosition(), m_pieces[indexOldPos].getPosition()))
+			{
+				m_pieces[i].setPosition(m_pieces[indexNewPos].getPosition());
+			}
+		}
+		
+		// castling if the king not moved yet
+		if(str == "e1g1") // king's move
+			if(s_positions.find("e1") == -1) 
+				move("h1f1"); // rook's move
+		
+		if(str == "e8g8")
+			if(s_positions.find("e8") == -1)
+				move("h8f8");
+		
+		if(str == "e1c1")
+			if(s_positions.find("e1") == -1) 
+				move("a1d1");
+		
+		if(str == "e8c8") 
+			if(s_positions.find("e8") == -1)
+				move("a8d8");
+	}
+	
 	void draw(sf::RenderWindow& window)
 	{
 		window.draw(m_boardSprite);
@@ -201,51 +273,6 @@ public:
 			window.draw(highlight);
 		}
 	}
-	
-	void move(std::string str)
-	{
-		sf::Vector2f oldPos = toCoords(str[0], str[1]);
-		sf::Vector2f newPos = toCoords(str[2], str[3]);
-		
-		// lambda for equals
-		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 1e-2)
-		{
-			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
-		};
-		
-		#ifdef DEBUG
-		// if(m_logic)
-		{
-			std::cout << "[DEBUG] move()::oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
-			std::cout << "[DEBUG] move()::newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
-		}
-		#endif
-		
-		for(auto& piece : m_pieces)
-			if(arePositionsEqual(piece.getPosition(), newPos))
-				piece.setPosition(-100, -100);
-		
-		for(auto& piece : m_pieces)
-			if(arePositionsEqual(piece.getPosition(), oldPos))
-				piece.setPosition(newPos);
-		
-		// castling if the king not moved yet
-		if(str == "e1g1") // king's move
-			if(s_positions.find("e1") == -1) 
-				move("h1f1"); // rook's move
-		
-		if(str == "e8g8")
-			if(s_positions.find("e8") == -1)
-				move("h8f8");
-		
-		if(str == "e1c1")
-			if(s_positions.find("e1") == -1) 
-				move("a1d1");
-		
-		if(str == "e8c8") 
-			if(s_positions.find("e8") == -1)
-				move("a8d8");
-	}
 
 private:
 	std::string toChess(sf::Vector2f piece)
@@ -260,13 +287,21 @@ private:
 
 	sf::Vector2f toCoords(char col, char row)
 	{
-		int x = static_cast<int>(col) - 'a';
-		int y = 8 - (static_cast<int>(row) - '1');
+		int x = static_cast<int>(col) - 'a';  // Konwersja kolumny na X
+		int y = static_cast<int>(row) - '1';  // Konwersja rzędu na Y
 		
-		return sf::Vector2f(x * TILE_SIZE, y * TILE_SIZE);
+		// (7 - y) aby odwrócić współrzędne Y
+		sf::Vector2f position(x * TILE_SIZE, (7 - y) * TILE_SIZE);
+		
+		#ifdef DEBUG
+		std::cout << "[DEBUG] toCoords('" << col << row << "') = (" 
+				<< position.x << ", " << position.y << ")\n";
+		#endif
+		
+		return position;
 	}
-	
-	int getPieceAt(sf::Vector2i tile)
+
+	int getPieceAt(sf::Vector2f tile)
 	{
 		for(int i = 0; i < 32; ++i)
 		{
@@ -280,11 +315,11 @@ private:
 		return -1;
 	}
 
-	bool isValidMove(sf::Vector2i start, sf::Vector2i end)
+	bool isValidMove(sf::Vector2f start, sf::Vector2f end)
 	{
 		return start != end and end.x >= 0 and end.x < 8 and end.y >= 0 and end.y < 8;
 	}
-	
+
 private:
 	Stockfish& m_engine;
 	sf::Texture m_boardTexture{};
@@ -297,7 +332,7 @@ private:
 	std::string m_stockfishMove{};				// last respond from engine
 	inline static std::string s_positions{};	// all positions for uci
 
-	sf::Vector2i m_selectedTile{};			// selected position
+	sf::Vector2f m_selectedTile{};			// selected position
 	int m_selectedPieceIndex = -1;			// index of the selected figure (-1 means none)
 	bool m_pieceSelected = false;			// has a figure been selected?
 	bool m_logic = false;
