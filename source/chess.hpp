@@ -208,13 +208,13 @@ public:
 		sf::Vector2f newPos = toCoords(str[2], str[3]);
 		
 		// lambda for equals
-		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 1e-2f)
+		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 1e-2)
 		{
 			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
 		};
 		
 		#ifdef DEBUG
-		if(m_logic)
+		// if(m_logic)
 		{
 			std::cout << "[DEBUG] move()::oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
 			std::cout << "[DEBUG] move()::newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
