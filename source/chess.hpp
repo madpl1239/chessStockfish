@@ -89,7 +89,7 @@ public:
 					m_command = toChess(oldPos);
 					
 					#ifdef DEBUG
-					std::cout << "oldPos* = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
+					std::cout << "[DEBUG] oldPos* = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
 					#endif
 				}
 			}
@@ -110,7 +110,7 @@ public:
 					m_command += toChess(newPos);
 					
 					#ifdef DEBUG
-					std::cout << "newPos* = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+					std::cout << "[DEBUG] newPos* = " << "(" << newPos.x << ", " << newPos.y << ")\n";
 					#endif
 					
 					m_logic = false;
@@ -205,11 +205,6 @@ public:
 	{
 		sf::Vector2f oldPos = toCoords(str[0], str[1]);
 		sf::Vector2f newPos = toCoords(str[2], str[3]);
-		
-		oldPos.x += OFFSET;
-		oldPos.y += OFFSET;
-		newPos.x += OFFSET;
-		newPos.y += OFFSET;
 		
 		#ifdef DEBUG
 		if(m_logic)
