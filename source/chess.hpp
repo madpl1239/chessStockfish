@@ -119,21 +119,67 @@ public:
 					s_positions += " " + m_command;
 					
 					// stockfish move
-					m_stockfishMove = getNextMove(m_engine, s_positions);
-					#ifdef DEBUG
-					std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
-					#endif
-					m_logic = true;
-					move(m_stockfishMove);
-					
-					m_command.clear();
-					m_stockfishMove.clear();
-					#ifdef DEBUG
-					std::cout << "s_positions = " << s_positions << "\n";
-					#endif
+					if(getNextMove())
+					{
+						#ifdef DEBUG
+						std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
+						#endif
+						m_logic = true;
+						move(m_stockfishMove);
+						
+						m_command.clear();
+						m_stockfishMove.clear();
+						#ifdef DEBUG
+						std::cout << "s_positions = " << s_positions << "\n";
+						#endif
+					}
 				}
 			}
 		}
+	}
+	
+	std::string goNewGame()
+	{
+		m_engine.sendCommand("ucinewgame");
+		m_engine.sendCommand("isready");
+		
+		std::string str = m_engine.getResponse();
+		if(str.find("readyok") == std::string::npos)
+			return "response error";
+		
+		#ifdef DEBUG
+		std::cout << "[DEBUG] ucinewgame\n";
+		std::cout << "[DEBUG] readyok\n";
+		#endif	
+		
+		return "ok";
+	}
+	
+	bool getNextMove()
+	{
+		// sending full movement history
+		std::string command = "position startpos moves" + s_positions;
+		m_engine.sendCommand(command);
+		
+		m_engine.sendCommand("go depth 2");
+		std::string response = m_engine.getResponse();
+		
+		// extracting the 'bestmove' movement
+		size_t bestmoveIdx = response.find("bestmove");
+		if(bestmoveIdx != std::string::npos)
+		{
+			size_t endIdx = response.find(' ', bestmoveIdx + 9);
+			m_stockfishMove = (endIdx != std::string::npos) 
+								? response.substr(bestmoveIdx + 9, endIdx - (bestmoveIdx + 9))
+								: response.substr(bestmoveIdx + 9);
+			
+			// adding Stockfish Movement to History
+			s_positions += " " + m_stockfishMove;
+			
+			return true;
+		}
+		
+		return false;
 	}
 
 	void draw(sf::RenderWindow& window)

@@ -11,6 +11,3 @@
 #include <iostream>
 #include "defines.hpp"
 #include "stockHandle.hpp"
-
-std::string goNewGame(Stockfish& engine);
-std::string getNextMove(Stockfish& engine, std::string& moves);
