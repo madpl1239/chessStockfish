@@ -11,6 +11,7 @@
 #include <string>
 #include <stdexcept>
 #include <cctype>
+#include <cmath>
 #include "defines.hpp"
 
 
@@ -89,7 +90,7 @@ public:
 					m_command = toChess(oldPos);
 					
 					#ifdef DEBUG
-					std::cout << "[DEBUG] oldPos* = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
+					std::cout << "[DEBUG] player::oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
 					#endif
 				}
 			}
@@ -110,7 +111,7 @@ public:
 					m_command += toChess(newPos);
 					
 					#ifdef DEBUG
-					std::cout << "[DEBUG] newPos* = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+					std::cout << "[DEBUG] player::newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
 					#endif
 					
 					m_logic = false;
@@ -206,21 +207,26 @@ public:
 		sf::Vector2f oldPos = toCoords(str[0], str[1]);
 		sf::Vector2f newPos = toCoords(str[2], str[3]);
 		
+		// lambda for equals
+		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 1e-2f)
+		{
+			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
+		};
+		
 		#ifdef DEBUG
 		if(m_logic)
 		{
-			std::cout << "[DEBUG] << engine moves >>\n";
-			std::cout << "[DEBUG] oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
-			std::cout << "[DEBUG] newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+			std::cout << "[DEBUG] move()::oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
+			std::cout << "[DEBUG] move()::newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
 		}
 		#endif
 		
 		for(auto& piece : m_pieces)
-			if(piece.getPosition() == newPos)
+			if(arePositionsEqual(piece.getPosition(), newPos))
 				piece.setPosition(-100, -100);
 		
 		for(auto& piece : m_pieces)
-			if(piece.getPosition() == oldPos)
+			if(arePositionsEqual(piece.getPosition(), oldPos))
 				piece.setPosition(newPos);
 		
 		// castling if the king not moved yet
