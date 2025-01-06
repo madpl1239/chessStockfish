@@ -106,8 +106,9 @@ public:
 					m_pieceSelected = false;
 					
 					sf::Vector2f newPos;
-					newPos.x = mousePos.x - OFFSET;
-					newPos.y = mousePos.y - OFFSET;
+					newPos.x = tile.x * TILE_SIZE + OFFSET;
+					newPos.y = tile.y * TILE_SIZE + OFFSET;
+					
 					m_command += toChess(newPos);
 					
 					#ifdef DEBUG
@@ -115,7 +116,6 @@ public:
 					std::cout << "[DEBUG] m_command = " << m_command << "\n";
 					#endif
 					
-					m_logic = false;
 					move(m_command);
 					s_positions += " " + m_command;
 					
@@ -125,9 +125,7 @@ public:
 						#ifdef DEBUG
 						std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
 						#endif
-						m_logic = true;
 						move(m_stockfishMove);
-						
 						m_command.clear();
 						m_stockfishMove.clear();
 						#ifdef DEBUG
@@ -183,6 +181,7 @@ public:
 		return false;
 	}
 
+	/*
 	void move(std::string str)
 	{
 		int indexOldPos = getPieceAt(toCoords(str[0], str[1]) - sf::Vector2f(OFFSET, OFFSET));
@@ -208,11 +207,13 @@ public:
 				piece.setPosition(-500, -500);
 		*/
 			
+		/*
 		for(int i = 0; i < 32; ++i)
 		{
 			if(arePositionsEqual(m_pieces[i].getPosition(), m_pieces[indexNewPos].getPosition()))
 				m_pieces[i].setPosition(-500, -500);
 		}
+		*/
 		
 		/*
 		for(auto& piece : m_pieces)
@@ -228,6 +229,7 @@ public:
 		}
 		*/
 		
+		/*
 		for(int i = 0; i < 32; ++i)
 		{
 			if(arePositionsEqual(m_pieces[i].getPosition(), m_pieces[indexOldPos].getPosition()))
@@ -252,6 +254,31 @@ public:
 		if(str == "e8c8") 
 			if(s_positions.find("e8") == -1)
 				move("a8d8");
+	}
+	*/
+		
+	void move(std::string str)
+	{
+		sf::Vector2f oldPos = toCoords(str[0], str[1]);
+		sf::Vector2f newPos = toCoords(str[2], str[3]);
+		
+		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 0.5f)
+		{
+			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
+		};
+		
+		// Usuwanie figury na docelowej pozycji
+		for(auto& piece : m_pieces)
+			if(arePositionsEqual(piece.getPosition(), newPos))
+				piece.setPosition(-100, -100);
+		
+		for(auto& piece : m_pieces)
+			if(arePositionsEqual(piece.getPosition(), oldPos))
+			{
+				piece.setPosition(newPos);
+				piece.setPosition(std::round(piece.getPosition().x / TILE_SIZE) * TILE_SIZE,
+									std::round(piece.getPosition().y / TILE_SIZE) * TILE_SIZE);
+			}
 	}
 	
 	void draw(sf::RenderWindow& window)
@@ -335,5 +362,4 @@ private:
 	sf::Vector2f m_selectedTile{};			// selected position
 	int m_selectedPieceIndex = -1;			// index of the selected figure (-1 means none)
 	bool m_pieceSelected = false;			// has a figure been selected?
-	bool m_logic = false;
 };
