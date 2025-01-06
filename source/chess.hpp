@@ -72,7 +72,7 @@ public:
 	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		sf::Vector2f tile((mousePos.x - OFFSET) / TILE_SIZE, (mousePos.y - OFFSET) / TILE_SIZE);
+		sf::Vector2f tile(std::round((mousePos.x - OFFSET) / TILE_SIZE), std::round((mousePos.y - OFFSET) / TILE_SIZE));
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
@@ -181,82 +181,6 @@ public:
 		return false;
 	}
 
-	/*
-	void move(std::string str)
-	{
-		int indexOldPos = getPieceAt(toCoords(str[0], str[1]) - sf::Vector2f(OFFSET, OFFSET));
-		int indexNewPos = getPieceAt(toCoords(str[2], str[3]) - sf::Vector2f(OFFSET, OFFSET));
-		
-		// lambda for equals
-		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 1)
-		{
-			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
-		};
-		
-		#ifdef DEBUG
-		// if(m_logic)
-		{
-			std::cout << "[DEBUG] move()::indexOldPos = " << indexOldPos << ")\n";
-			std::cout << "[DEBUG] move()::indexNewPos = " << indexNewPos << ")\n";
-		}
-		#endif
-		
-		/*
-		for(auto& piece : m_pieces)
-			if(arePositionsEqual(piece.getPosition(), newPos))
-				piece.setPosition(-500, -500);
-		*/
-			
-		/*
-		for(int i = 0; i < 32; ++i)
-		{
-			if(arePositionsEqual(m_pieces[i].getPosition(), m_pieces[indexNewPos].getPosition()))
-				m_pieces[i].setPosition(-500, -500);
-		}
-		*/
-		
-		/*
-		for(auto& piece : m_pieces)
-		{
-			if(arePositionsEqual(piece.getPosition(), oldPos))
-			{
-				piece.setPosition(newPos);
-				
-				#ifdef DEBUG
-				std::cout << "[DEBUG] in move():: for loop if(...)\n";
-				#endif
-			}
-		}
-		*/
-		
-		/*
-		for(int i = 0; i < 32; ++i)
-		{
-			if(arePositionsEqual(m_pieces[i].getPosition(), m_pieces[indexOldPos].getPosition()))
-			{
-				m_pieces[i].setPosition(m_pieces[indexNewPos].getPosition());
-			}
-		}
-		
-		// castling if the king not moved yet
-		if(str == "e1g1") // king's move
-			if(s_positions.find("e1") == -1) 
-				move("h1f1"); // rook's move
-		
-		if(str == "e8g8")
-			if(s_positions.find("e8") == -1)
-				move("h8f8");
-		
-		if(str == "e1c1")
-			if(s_positions.find("e1") == -1) 
-				move("a1d1");
-		
-		if(str == "e8c8") 
-			if(s_positions.find("e8") == -1)
-				move("a8d8");
-	}
-	*/
-		
 	void move(std::string str)
 	{
 		sf::Vector2f oldPos = toCoords(str[0], str[1]);
@@ -279,6 +203,23 @@ public:
 				piece.setPosition(std::round(piece.getPosition().x / TILE_SIZE) * TILE_SIZE,
 									std::round(piece.getPosition().y / TILE_SIZE) * TILE_SIZE);
 			}
+		
+		// castling if the king not moved yet
+		if(str == "e1g1") // king's move
+			if(s_positions.find("e1") == -1) 
+				move("h1f1"); // rook's move
+		
+		if(str == "e8g8")
+			if(s_positions.find("e8") == -1)
+				move("h8f8");
+		
+		if(str == "e1c1")
+			if(s_positions.find("e1") == -1) 
+				move("a1d1");
+		
+		if(str == "e8c8") 
+			if(s_positions.find("e8") == -1)
+				move("a8d8");
 	}
 	
 	void draw(sf::RenderWindow& window)
