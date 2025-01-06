@@ -10,7 +10,6 @@
 #include "stockHandle.hpp"
 #include "defines.hpp"
 #include "chess.hpp"
-#include "utils.hpp"
 
 
 int main(void)
@@ -39,23 +38,22 @@ int main(void)
 		engine.sendCommand("setoption name Skill Level value 5");
 		engine.sendCommand("setoption name Minimum Thinking Time value 3000");
 		engine.sendCommand("uci");
-		std::cout << engine.getResponse() << "\n";
+		std::cout << engine.getResponse();
 		
 		engine.sendCommand("isready");
 		if(engine.getResponse().find("readyok") != std::string::npos)
-			std::cout << "engine: readyok\n";
+			std::cout << "readyok\n";
 		else
 		{
 			engine.sendCommand("quit");
-			std::cerr << "engine: not readyok!\n";
+			std::cerr << "not readyok!\n";
 			
 			return -1;
 		}
 		
 		Chess chess(engine);
 		chess.setupBoard();
-		
-		goNewGame(engine);
+		chess.goNewGame();
 		
 		while(window.isOpen())
 		{

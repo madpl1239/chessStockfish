@@ -12,7 +12,6 @@
 #include <stdexcept>
 #include <cctype>
 #include "defines.hpp"
-#include "utils.hpp"
 
 
 class Chess
@@ -215,9 +214,9 @@ public:
 		#ifdef DEBUG
 		if(m_logic)
 		{
-			std::cout << "<< engine moves >>\n";
-			std::cout << "oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
-			std::cout << "newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
+			std::cout << "[DEBUG] << engine moves >>\n";
+			std::cout << "[DEBUG] oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
+			std::cout << "[DEBUG] newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
 		}
 		#endif
 		
