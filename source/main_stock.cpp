@@ -17,9 +17,9 @@ int main(void)
 	try
 	{
 		// logo
-		std::cout << "guichess by madpl 2024 started.\n";
+		std::cout << "guiChess by madpl 2024 started.\n";
 		
-		sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "guichess by madpl - 2024");
+		sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "guiChess by madpl - 2024");
 		window.setPosition(sf::Vector2i(600, 200));
 		window.setFramerateLimit(60);
 		window.setKeyRepeatEnabled(false);

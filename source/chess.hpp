@@ -33,7 +33,7 @@ public:
 		for(int i = 0; i < 32; ++i)
 		{
 			m_pieces[i].setTexture(m_piecesTexture);
-			// m_pieces[i].setOrigin(0, 0);
+			m_pieces[i].setOrigin(0, 1);
 		}
 		
 		m_figureMap = {{"R", 0}, {"N", 1}, {"B", 2}, {"Q", 3}, {"K", 4}, {"P", 5}};
@@ -64,9 +64,6 @@ public:
 					m_pieces[index].setPosition(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
 					
 					++index;
-					
-					std::cout << "[DEBUG] Setting piece " << piece 
-								<< " at (" << x * TILE_SIZE + OFFSET << ", " << y * TILE_SIZE + OFFSET << ")\n";
 				}
 			}
 			
@@ -76,7 +73,7 @@ public:
 	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		sf::Vector2f tile(std::round((mousePos.x - OFFSET) / TILE_SIZE), std::round((mousePos.y - OFFSET) / TILE_SIZE));
+		sf::Vector2f tile((mousePos.x - OFFSET) / TILE_SIZE, (mousePos.y - OFFSET) / TILE_SIZE);
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
@@ -103,16 +100,12 @@ public:
 				// attempt to make a move
 				if(isValidMove(m_selectedTile, tile))
 				{
-					m_pieces[m_selectedPieceIndex].setPosition(tile.x * TILE_SIZE + OFFSET,
-															   tile.y * TILE_SIZE + OFFSET);
+					sf::Vector2f newPos(tile.x * TILE_SIZE + OFFSET, tile.y * TILE_SIZE + OFFSET);
+					
+					m_pieces[m_selectedPieceIndex].setPosition(newPos);
 					
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
-					
-					sf::Vector2f newPos;
-					newPos.x = tile.x * TILE_SIZE + OFFSET;
-					newPos.y = tile.y * TILE_SIZE + OFFSET;
-					
 					m_command += toChess(newPos);
 					
 					#ifdef DEBUG
@@ -129,9 +122,11 @@ public:
 						#ifdef DEBUG
 						std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
 						#endif
+						
 						move(m_stockfishMove);
 						m_command.clear();
 						m_stockfishMove.clear();
+						
 						#ifdef DEBUG
 						std::cout << "s_positions = " << s_positions << "\n";
 						#endif
@@ -195,6 +190,11 @@ public:
 			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
 		};
 		
+		// beating figure
+		for(auto& piece : m_pieces)
+			if(arePositionsEqual(piece.getPosition(), newPos))
+				piece.setPosition(-100, -100);
+		
 		for(auto& piece : m_pieces)
 		{
 			std::cout << "[DEBUG] Comparing piece position (" << piece.getPosition().x << ", " << piece.getPosition().y 
@@ -202,24 +202,11 @@ public:
 			
 			if(arePositionsEqual(piece.getPosition(), oldPos))
 			{
-				/*
-				piece.setPosition(newPos);
-				piece.setPosition(std::round(piece.getPosition().x / TILE_SIZE) * TILE_SIZE,
-									std::round(piece.getPosition().y / TILE_SIZE) * TILE_SIZE);
-				*/
-				
 				std::cout << "[DEBUG] Match found, updating position to (" << newPos.x << ", " << newPos.y << ")\n";
 				piece.setPosition(newPos);
 				break;
 			}
 		}
-		
-		/*
-		// Usuwanie figury na docelowej pozycji
-		for(auto& piece : m_pieces)
-			if(arePositionsEqual(piece.getPosition(), newPos))
-				piece.setPosition(-100, -100);
-		*/
 		
 		// castling if the king not moved yet
 		if(str == "e1g1") // king's move
@@ -238,7 +225,7 @@ public:
 			if(s_positions.find("e8") == -1)
 				move("a8d8");
 	}
-	
+
 	void draw(sf::RenderWindow& window)
 	{
 		window.draw(m_boardSprite);
@@ -274,7 +261,7 @@ private:
 	{
 		int x = static_cast<int>(col - 'a');
 		int y = 8 - static_cast<int>(row - '1') - 1;
-
+		
 		return sf::Vector2f(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
 	}
 
@@ -309,7 +296,7 @@ private:
 	std::string m_stockfishMove{};				// last respond from engine
 	inline static std::string s_positions{};	// all positions for uci
 
-	sf::Vector2f m_selectedTile{};			// selected position
-	int m_selectedPieceIndex = -1;			// index of the selected figure (-1 means none)
-	bool m_pieceSelected = false;			// has a figure been selected?
+	sf::Vector2f m_selectedTile{};	// selected position
+	int m_selectedPieceIndex = -1;	// index of the selected figure (-1 means none)
+	bool m_pieceSelected = false;	// has a figure been selected?
 };
