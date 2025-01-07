@@ -64,8 +64,12 @@ public:
 					m_pieces[index].setPosition(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
 					
 					++index;
+					
+					std::cout << "[DEBUG] Setting piece " << piece 
+								<< " at (" << x * TILE_SIZE + OFFSET << ", " << y * TILE_SIZE + OFFSET << ")\n";
 				}
 			}
+			
 		}
 	}
 
@@ -191,18 +195,31 @@ public:
 			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
 		};
 		
+		for(auto& piece : m_pieces)
+		{
+			std::cout << "[DEBUG] Comparing piece position (" << piece.getPosition().x << ", " << piece.getPosition().y 
+						<< ") with oldPos (" << oldPos.x << ", " << oldPos.y << ")\n";
+			
+			if(arePositionsEqual(piece.getPosition(), oldPos))
+			{
+				/*
+				piece.setPosition(newPos);
+				piece.setPosition(std::round(piece.getPosition().x / TILE_SIZE) * TILE_SIZE,
+									std::round(piece.getPosition().y / TILE_SIZE) * TILE_SIZE);
+				*/
+				
+				std::cout << "[DEBUG] Match found, updating position to (" << newPos.x << ", " << newPos.y << ")\n";
+				piece.setPosition(newPos);
+				break;
+			}
+		}
+		
+		/*
 		// Usuwanie figury na docelowej pozycji
 		for(auto& piece : m_pieces)
 			if(arePositionsEqual(piece.getPosition(), newPos))
 				piece.setPosition(-100, -100);
-		
-		for(auto& piece : m_pieces)
-			if(arePositionsEqual(piece.getPosition(), oldPos))
-			{
-				piece.setPosition(newPos);
-				piece.setPosition(std::round(piece.getPosition().x / TILE_SIZE) * TILE_SIZE,
-									std::round(piece.getPosition().y / TILE_SIZE) * TILE_SIZE);
-			}
+		*/
 		
 		// castling if the king not moved yet
 		if(str == "e1g1") // king's move
@@ -255,18 +272,10 @@ private:
 
 	sf::Vector2f toCoords(char col, char row)
 	{
-		int x = static_cast<int>(col) - 'a';  // Konwersja kolumny na X
-		int y = static_cast<int>(row) - '1';  // Konwersja rzędu na Y
-		
-		// (7 - y) aby odwrócić współrzędne Y
-		sf::Vector2f position(x * TILE_SIZE, (7 - y) * TILE_SIZE);
-		
-		#ifdef DEBUG
-		std::cout << "[DEBUG] toCoords('" << col << row << "') = (" 
-				<< position.x << ", " << position.y << ")\n";
-		#endif
-		
-		return position;
+		int x = static_cast<int>(col - 'a');
+		int y = 8 - static_cast<int>(row - '1') - 1;
+
+		return sf::Vector2f(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
 	}
 
 	int getPieceAt(sf::Vector2f tile)
