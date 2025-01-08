@@ -24,6 +24,7 @@ public:
 		// empty
 	}
 
+public:
 	bool isWhite;
 };
 
@@ -58,7 +59,7 @@ public:
 			"rnbqkbnr", "pppppppp", "........", "........",
 			"........", "........", "PPPPPPPP", "RNBQKBNR"
 		};
-
+		
 		int index = 0;
 		for(int y = 0; y < 8; ++y)
 		{
@@ -68,15 +69,15 @@ public:
 				if(piece != '.')
 				{
 					int type = m_figureMap[std::string(1, std::toupper(piece))];
-					int color = (piece >= 'a' && piece <= 'z') ? 0 : 1;
-
+					int color = (piece >= 'a' and piece <= 'z') ? 0 : 1;
+					
 					m_pieces[index].setTextureRect(sf::IntRect(type * TILE_SIZE, color * TILE_SIZE,
 															   TILE_SIZE, TILE_SIZE));
-
+					
 					m_pieces[index].setPosition(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
-
+					
 					m_pieces[index].isWhite = (color == 1);
-
+					
 					++index;
 				}
 			}
@@ -86,10 +87,18 @@ public:
 	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		sf::Vector2f tile((mousePos.x - OFFSET) / TILE_SIZE, (mousePos.y - OFFSET) / TILE_SIZE);
+		
+		int mPosX = std::round((mousePos.x - OFFSET) / TILE_SIZE);
+		int mPosY = std::round((mousePos.y - OFFSET) / TILE_SIZE);
+		
+		sf::Vector2f tile(mPosX, mPosY);
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
+			#ifdef DEBUG
+			std::cout << "[DEBUG] mousePos = " << "(" << mousePos.x << ", " << mousePos.y << ")\n";
+			#endif
+			
 			if(not m_pieceSelected)
 			{
 				// change of figure
@@ -100,6 +109,7 @@ public:
 					m_pieceSelected = true;
 					m_selectedTile = tile;
 					
+					// oldPos have OFFSET because m_pieces[].setPosition(have OFFSET)
 					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
 					m_command = toChess(oldPos);
 					
@@ -202,23 +212,27 @@ public:
 		
 		sf::Vector2f oldPos = toCoords(str[0], str[1]);
 		sf::Vector2f newPos = toCoords(str[2], str[3]);
-
+		
 		int movingPieceIndex = -1;
-
-		// find and update figure position on oldPos
+		
+		// find and update 'oldPos' figure position
 		for(int i = 0; i < 32; ++i)
 		{
 			if(arePositionsEqual(m_pieces[i].getPosition(), oldPos))
 			{
-				std::cout << "[DEBUG] Moving piece " << i << " from (" << oldPos.x << ", " << oldPos.y 
+				std::cout << "[DEBUG] Moving piece[" << i << "] from (" << oldPos.x << ", " << oldPos.y 
 							<< ") to (" << newPos.x << ", " << newPos.y << ")\n";
 				
 				m_pieces[i].setPosition(newPos);
-				movingPieceIndex = i;  // remember the index of the figure being moved
+				
+				// remember the index of the moved figure
+				movingPieceIndex = i;
 				
 				break;
 			}
 		}
+		
+		// castling(str);
 		
 		if(movingPieceIndex == -1)
 		{
@@ -230,16 +244,18 @@ public:
 		// support for beating figures
 		for(int i = 0; i < 32; ++i)
 		{
-			if(arePositionsEqual(m_pieces[i].getPosition(), newPos) && i != movingPieceIndex)
+			if(arePositionsEqual(m_pieces[i].getPosition(), newPos) and i != movingPieceIndex)
 			{
-				std::cout << "[DEBUG] Found piece " << i << " at newPos (" << newPos.x << ", " << newPos.y << "). Checking for capture.\n";
+				std::cout << "[DEBUG] Found piece[" << i << "] at newPos (" << newPos.x << ", " 
+							<< newPos.y << "). Checking for capture.\n";
 				
 				// check if it's an opponent's piece
 				if(m_pieces[i].isWhite != m_pieces[movingPieceIndex].isWhite)
 				{
-					m_pieces[i].setPosition(-100, -100);  // hide captured pawn
+					// hide captured pawn
+					m_pieces[i].setPosition(-200, -200);
 					
-					std::cout << "[DEBUG] Capturing piece " << i << " at (" << newPos.x << ", " << newPos.y << ")\n";
+					std::cout << "[DEBUG] Capturing piece[" << i << "] at (" << newPos.x << ", " << newPos.y << ")\n";
 				}
 				else
 					std::cout << "[DEBUG] No capture. Same color piece at (" << newPos.x << ", " << newPos.y << ").\n";
@@ -247,23 +263,6 @@ public:
 				break;
 			}
 		}
-		
-		// castling if the king not moved yet
-		if(str == "e1g1") // king's move
-			if(s_positions.find("e1") == -1) 
-				move("h1f1"); // rook's move
-		
-		if(str == "e8g8")
-			if(s_positions.find("e8") == -1)
-				move("h8f8");
-		
-		if(str == "e1c1")
-			if(s_positions.find("e1") == -1) 
-				move("a1d1");
-		
-		if(str == "e8c8") 
-			if(s_positions.find("e8") == -1)
-				move("a8d8");
 	}
 
 	void draw(sf::RenderWindow& window)
@@ -319,14 +318,24 @@ private:
 		return -1;
 	}
 
-	bool isOpponentPiece(const sf::Sprite& movingPiece, const sf::Sprite& targetPiece)
+	void castling(std::string& str)
 	{
-		// Załóżmy, że różne kolory figur są reprezentowane przez różne wartości tekstur lub inne atrybuty
-		int movingPieceColor = movingPiece.getTextureRect().top / TILE_SIZE;
-		int targetPieceColor = targetPiece.getTextureRect().top / TILE_SIZE;
-
-		// Sprawdź, czy kolory są różne
-		return movingPieceColor != targetPieceColor;
+		// castling if the king not moved yet
+		if(str == "e1g1") // king's move
+			if(s_positions.find("e1") == -1) 
+				move("h1f1"); // rook's move
+		
+		if(str == "e8g8")
+			if(s_positions.find("e8") == -1)
+				move("h8f8");
+		
+		if(str == "e1c1")
+			if(s_positions.find("e1") == -1) 
+				move("a1d1");
+		
+		if(str == "e8c8") 
+			if(s_positions.find("e8") == -1)
+				move("a8d8");
 	}
 
 	bool isValidMove(sf::Vector2f start, sf::Vector2f end)
