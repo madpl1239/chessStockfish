@@ -205,39 +205,49 @@ public:
 
 		int movingPieceIndex = -1;
 
-		// Znajdź i zaktualizuj pozycję figury na oldPos
+		// find and update figure position on oldPos
 		for(int i = 0; i < 32; ++i)
 		{
 			if(arePositionsEqual(m_pieces[i].getPosition(), oldPos))
 			{
+				std::cout << "[DEBUG] Moving piece " << i << " from (" << oldPos.x << ", " << oldPos.y 
+							<< ") to (" << newPos.x << ", " << newPos.y << ")\n";
+				
 				m_pieces[i].setPosition(newPos);
-				movingPieceIndex = i;  // Zapamiętaj indeks przesuwanej figury
-				std::cout << "[DEBUG] Moving piece from (" << oldPos.x << ", " << oldPos.y << ") to (" << newPos.x << ", " << newPos.y << ")\n";
-
+				movingPieceIndex = i;  // remember the index of the figure being moved
+				
 				break;
 			}
 		}
-
-		// Sprawdź, czy na newPos znajduje się figura przeciwnika
+		
+		if(movingPieceIndex == -1)
+		{
+			std::cout << "[ERROR] No piece found at oldPos (" << oldPos.x << ", " << oldPos.y << ")\n";
+			
+			return;
+		}
+		
+		// support for beating figures
 		for(int i = 0; i < 32; ++i)
 		{
-			if(arePositionsEqual(m_pieces[i].getPosition(), newPos) and i != movingPieceIndex)
+			if(arePositionsEqual(m_pieces[i].getPosition(), newPos) && i != movingPieceIndex)
 			{
-				std::cout << "[DEBUG] Found piece at newPos (" << newPos.x << ", " << newPos.y << "). Checking for capture.\n";
-
-				// Sprawdź, czy to figura przeciwnika
+				std::cout << "[DEBUG] Found piece " << i << " at newPos (" << newPos.x << ", " << newPos.y << "). Checking for capture.\n";
+				
+				// check if it's an opponent's piece
 				if(m_pieces[i].isWhite != m_pieces[movingPieceIndex].isWhite)
 				{
-					m_pieces[i].setPosition(-100, -100);  // Ukryj zbitego pionka
-					std::cout << "[DEBUG] Capturing piece at (" << newPos.x << ", " << newPos.y << ")\n";
+					m_pieces[i].setPosition(-100, -100);  // hide captured pawn
+					
+					std::cout << "[DEBUG] Capturing piece " << i << " at (" << newPos.x << ", " << newPos.y << ")\n";
 				}
 				else
 					std::cout << "[DEBUG] No capture. Same color piece at (" << newPos.x << ", " << newPos.y << ").\n";
-
+				
 				break;
 			}
 		}
-
+		
 		// castling if the king not moved yet
 		if(str == "e1g1") // king's move
 			if(s_positions.find("e1") == -1) 
