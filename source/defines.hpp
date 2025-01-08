@@ -5,8 +5,14 @@
  */ 
 #pragma once
 
+// for debugging
 #define DEBUG 1
 // #undef DEBUG
+
+// for linux an Windows
+#undef LINUX
+#define WINDOWS
+
 #define READ 0
 #define WRITE 1
 

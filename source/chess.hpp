@@ -197,8 +197,10 @@ public:
 		
 		for(auto& piece : m_pieces)
 		{
+			#ifdef DEBUG
 			std::cout << "[DEBUG] Comparing piece position (" << piece.getPosition().x << ", " << piece.getPosition().y 
 						<< ") with oldPos (" << oldPos.x << ", " << oldPos.y << ")\n";
+			#endif
 			
 			if(arePositionsEqual(piece.getPosition(), oldPos))
 			{

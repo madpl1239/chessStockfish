@@ -5,11 +5,14 @@
  */
 #pragma once
 
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/wait.h>
-#include <thread>
 #include "defines.hpp"
+
+#ifdef LINUX
+
+#include <thread>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 
 class Stockfish
@@ -135,3 +138,118 @@ private:
 	// for child process - stockfish
 	int m_pipe2[2];
 };
+
+#endif // LINUX
+
+
+#ifdef WINDOWS
+
+#include <windows.h>
+#include <string>
+#include <stdexcept>
+#include <iostream>
+
+
+class Stockfish
+{
+public:
+	Stockfish(const std::string& stockfishPath)
+	{
+		SECURITY_ATTRIBUTES saAttr;
+		saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+		saAttr.bInheritHandle = TRUE;
+		saAttr.lpSecurityDescriptor = NULL;
+
+		if(!CreatePipe(&m_pipeReadChild, &m_pipeWriteParent, &saAttr, 0))
+			throw std::runtime_error("CreatePipe failed");
+
+		if(!SetHandleInformation(m_pipeWriteParent, HANDLE_FLAG_INHERIT, 0))
+			throw std::runtime_error("SetHandleInformation failed");
+
+		if(!CreatePipe(&m_pipeReadParent, &m_pipeWriteChild, &saAttr, 0))
+			throw std::runtime_error("CreatePipe failed");
+
+		if(!SetHandleInformation(m_pipeReadParent, HANDLE_FLAG_INHERIT, 0))
+			throw std::runtime_error("SetHandleInformation failed");
+
+		STARTUPINFO siStartInfo;
+		ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+		siStartInfo.cb = sizeof(STARTUPINFO);
+		siStartInfo.hStdError = m_pipeWriteChild;
+		siStartInfo.hStdOutput = m_pipeWriteChild;
+		siStartInfo.hStdInput = m_pipeReadChild;
+		siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+		PROCESS_INFORMATION piProcInfo;
+		ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+
+		if(!CreateProcess(stockfishPath.c_str(), NULL, NULL, NULL, TRUE,
+						   0, NULL, NULL, &siStartInfo, &piProcInfo))
+		{
+			throw std::runtime_error("CreateProcess failed");
+		}
+
+		CloseHandle(piProcInfo.hProcess);
+		CloseHandle(piProcInfo.hThread);
+
+		CloseHandle(m_pipeWriteChild);
+		CloseHandle(m_pipeReadChild);
+
+		sendCommand("uci");
+		std::string response = getResponse();
+		if(response.find("uciok") == std::string::npos)
+			throw std::runtime_error("Stockfish did not respond correctly to UCI");
+	}
+
+	~Stockfish()
+	{
+		CloseHandle(m_pipeWriteParent);
+		CloseHandle(m_pipeReadParent);
+	}
+
+	void sendCommand(const std::string& command)
+	{
+		DWORD written;
+		std::string cmd = command + "\n";
+
+		if(!WriteFile(m_pipeWriteParent, cmd.c_str(), cmd.size(), &written, NULL))
+			throw std::runtime_error("Failed to send command to Stockfish");
+	}
+
+	std::string getResponse()
+	{
+		CHAR buffer[1024];
+		DWORD bytesRead;
+		std::string response;
+
+		while(ReadFile(m_pipeReadParent, buffer, sizeof(buffer) - 1, &bytesRead, NULL) and bytesRead != 0)
+		{
+			buffer[bytesRead] = '\0';
+			response += buffer;
+
+			if(response.find("uciok") != std::string::npos or
+				response.find("readyok") != std::string::npos or
+				response.find("bestmove") != std::string::npos)
+			{
+				break;
+			}
+		}
+
+		if(bytesRead == 0 && GetLastError() != ERROR_MORE_DATA)
+			throw std::runtime_error("Failed to read response from Stockfish");
+
+		#ifdef DEBUG
+		std::cout << "[DEBUG] Full response: " << response << "\n";
+		#endif
+
+		return response;
+	}
+
+private:
+	HANDLE m_pipeReadParent;
+	HANDLE m_pipeWriteParent;
+	HANDLE m_pipeReadChild;
+	HANDLE m_pipeWriteChild;
+};
+
+#endif
