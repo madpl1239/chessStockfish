@@ -9,9 +9,9 @@
 #define DEBUG 1
 // #undef DEBUG
 
-// for linux an Windows
-#undef LINUX
-#define WINDOWS
+// for Linux, Windows Systems
+#define LINUX
+#undef WINDOWS
 
 #define READ 0
 #define WRITE 1
