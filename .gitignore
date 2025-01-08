@@ -1,5 +1,6 @@
 build/
 stockfish
+stockfish.exe
 stockTest
 stockTest.exe
 README.md

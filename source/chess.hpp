@@ -190,10 +190,12 @@ public:
 			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
 		};
 		
+		/*
 		// beating figure
 		for(auto& piece : m_pieces)
 			if(arePositionsEqual(piece.getPosition(), newPos))
 				piece.setPosition(-100, -100);
+		*/
 		
 		for(auto& piece : m_pieces)
 		{

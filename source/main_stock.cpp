@@ -24,7 +24,14 @@ int main(void)
 		window.setFramerateLimit(60);
 		window.setKeyRepeatEnabled(false);
 		
+		#ifdef LINUX
 		Stockfish engine("./stockfish");
+		#endif
+
+		#ifdef WINDOWS
+		Stockfish engine("./stockfish.exe");
+		#endif
+
 		engine.sendCommand("uci");
 		if(engine.getResponse().find("uciok") == std::string::npos)
 		{

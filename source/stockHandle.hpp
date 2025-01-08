@@ -148,6 +148,7 @@ private:
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <thread>
 
 
 class Stockfish
