@@ -15,6 +15,19 @@
 #include "defines.hpp"
 
 
+class ChessPiece : public sf::Sprite
+{
+public:
+	ChessPiece():
+		isWhite(false)
+	{
+		// empty
+	}
+
+	bool isWhite;
+};
+
+
 class Chess
 {
 public:
@@ -45,28 +58,27 @@ public:
 			"rnbqkbnr", "pppppppp", "........", "........",
 			"........", "........", "PPPPPPPP", "RNBQKBNR"
 		};
-		
+
 		int index = 0;
 		for(int y = 0; y < 8; ++y)
 		{
 			for(int x = 0; x < 8; ++x)
 			{
 				char piece = m_board[y][x];
-				
 				if(piece != '.')
 				{
 					int type = m_figureMap[std::string(1, std::toupper(piece))];
-					int color = (piece >= 'a' and piece <= 'z') ? 0 : 1;
-					
+					int color = (piece >= 'a' && piece <= 'z') ? 0 : 1;
+
 					m_pieces[index].setTextureRect(sf::IntRect(type * TILE_SIZE, color * TILE_SIZE,
-																TILE_SIZE, TILE_SIZE));
-					
+															   TILE_SIZE, TILE_SIZE));
 					m_pieces[index].setPosition(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
-					
+
+					m_pieces[index].isWhite = (color == 1);
+
 					++index;
 				}
 			}
-			
 		}
 	}
 
@@ -182,51 +194,49 @@ public:
 
 	void move(std::string str)
 	{
-		sf::Vector2f oldPos = toCoords(str[0], str[1]);
-		sf::Vector2f newPos = toCoords(str[2], str[3]);
-		
 		auto arePositionsEqual = [](const sf::Vector2f& pos1, const sf::Vector2f& pos2, float epsilon = 0.5f)
 		{
 			return std::fabs(pos1.x - pos2.x) < epsilon and std::fabs(pos1.y - pos2.y) < epsilon;
 		};
 		
-		/*
-		// beating figure
-		for(auto& piece : m_pieces)
-			if(arePositionsEqual(piece.getPosition(), newPos))
-				piece.setPosition(-100, -100);
-		*/
+		sf::Vector2f oldPos = toCoords(str[0], str[1]);
+		sf::Vector2f newPos = toCoords(str[2], str[3]);
+
+		int movingPieceIndex = -1;
+
+		// Znajdź i zaktualizuj pozycję figury na oldPos
 		for(int i = 0; i < 32; ++i)
 		{
-			if (arePositionsEqual(m_pieces[i].getPosition(), newPos))
+			if(arePositionsEqual(m_pieces[i].getPosition(), oldPos))
 			{
-				// Sprawdź, czy figura na newPos jest przeciwnika
-				// Tu można doprecyzować warunek na podstawie koloru figury
-				if (m_pieces[i].getTextureRect() != m_pieces[m_selectedPieceIndex].getTextureRect())
-				{
-					m_pieces[i].setPosition(-100, -100);  // Ukryj zbitego pionka
-					std::cout << "[DEBUG] Capturing piece at (" << newPos.x << ", " << newPos.y << ")\n";
-				}
+				m_pieces[i].setPosition(newPos);
+				movingPieceIndex = i;  // Zapamiętaj indeks przesuwanej figury
+				std::cout << "[DEBUG] Moving piece from (" << oldPos.x << ", " << oldPos.y << ") to (" << newPos.x << ", " << newPos.y << ")\n";
 
 				break;
 			}
 		}
-		
-		for(auto& piece : m_pieces)
+
+		// Sprawdź, czy na newPos znajduje się figura przeciwnika
+		for(int i = 0; i < 32; ++i)
 		{
-			#ifdef DEBUG
-			std::cout << "[DEBUG] Comparing piece position (" << piece.getPosition().x << ", " << piece.getPosition().y 
-						<< ") with oldPos (" << oldPos.x << ", " << oldPos.y << ")\n";
-			#endif
-			
-			if(arePositionsEqual(piece.getPosition(), oldPos))
+			if(arePositionsEqual(m_pieces[i].getPosition(), newPos) and i != movingPieceIndex)
 			{
-				std::cout << "[DEBUG] Match found, updating position to (" << newPos.x << ", " << newPos.y << ")\n";
-				piece.setPosition(newPos);
+				std::cout << "[DEBUG] Found piece at newPos (" << newPos.x << ", " << newPos.y << "). Checking for capture.\n";
+
+				// Sprawdź, czy to figura przeciwnika
+				if(m_pieces[i].isWhite != m_pieces[movingPieceIndex].isWhite)
+				{
+					m_pieces[i].setPosition(-100, -100);  // Ukryj zbitego pionka
+					std::cout << "[DEBUG] Capturing piece at (" << newPos.x << ", " << newPos.y << ")\n";
+				}
+				else
+					std::cout << "[DEBUG] No capture. Same color piece at (" << newPos.x << ", " << newPos.y << ").\n";
+
 				break;
 			}
 		}
-		
+
 		// castling if the king not moved yet
 		if(str == "e1g1") // king's move
 			if(s_positions.find("e1") == -1) 
@@ -298,6 +308,16 @@ private:
 		return -1;
 	}
 
+	bool isOpponentPiece(const sf::Sprite& movingPiece, const sf::Sprite& targetPiece)
+	{
+		// Załóżmy, że różne kolory figur są reprezentowane przez różne wartości tekstur lub inne atrybuty
+		int movingPieceColor = movingPiece.getTextureRect().top / TILE_SIZE;
+		int targetPieceColor = targetPiece.getTextureRect().top / TILE_SIZE;
+
+		// Sprawdź, czy kolory są różne
+		return movingPieceColor != targetPieceColor;
+	}
+
 	bool isValidMove(sf::Vector2f start, sf::Vector2f end)
 	{
 		return start != end and end.x >= 0 and end.x < 8 and end.y >= 0 and end.y < 8;
@@ -308,7 +328,7 @@ private:
 	sf::Texture m_boardTexture{};
 	sf::Texture m_piecesTexture{};
 	sf::Sprite m_boardSprite{};
-	sf::Sprite m_pieces[32]{};					// maximum 32 figures
+	ChessPiece m_pieces[32]{};					// maximum 32 figures
 	std::map<std::string, int> m_figureMap{};	// mapping a figure to an atlas index
 	std::vector<std::string> m_board{};			// position in FEN notation
 	std::string m_command{};					// last command by player
