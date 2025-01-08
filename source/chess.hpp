@@ -72,6 +72,7 @@ public:
 
 					m_pieces[index].setTextureRect(sf::IntRect(type * TILE_SIZE, color * TILE_SIZE,
 															   TILE_SIZE, TILE_SIZE));
+
 					m_pieces[index].setPosition(x * TILE_SIZE + OFFSET, y * TILE_SIZE + OFFSET);
 
 					m_pieces[index].isWhite = (color == 1);
