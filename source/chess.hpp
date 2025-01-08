@@ -196,6 +196,21 @@ public:
 			if(arePositionsEqual(piece.getPosition(), newPos))
 				piece.setPosition(-100, -100);
 		*/
+		for(int i = 0; i < 32; ++i)
+		{
+			if (arePositionsEqual(m_pieces[i].getPosition(), newPos))
+			{
+				// Sprawdź, czy figura na newPos jest przeciwnika
+				// Tu można doprecyzować warunek na podstawie koloru figury
+				if (m_pieces[i].getTextureRect() != m_pieces[m_selectedPieceIndex].getTextureRect())
+				{
+					m_pieces[i].setPosition(-100, -100);  // Ukryj zbitego pionka
+					std::cout << "[DEBUG] Capturing piece at (" << newPos.x << ", " << newPos.y << ")\n";
+				}
+
+				break;
+			}
+		}
 		
 		for(auto& piece : m_pieces)
 		{
