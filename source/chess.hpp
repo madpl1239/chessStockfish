@@ -95,10 +95,6 @@ public:
 		
 		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
 		{
-			#ifdef DEBUG
-			std::cout << "[DEBUG] mousePos = " << "(" << mousePos.x << ", " << mousePos.y << ")\n";
-			#endif
-			
 			if(not m_pieceSelected)
 			{
 				// change of figure
@@ -112,10 +108,6 @@ public:
 					// oldPos have OFFSET because m_pieces[].setPosition(have OFFSET)
 					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
 					m_command = toChess(oldPos);
-					
-					#ifdef DEBUG
-					std::cout << "[DEBUG] player::oldPos = " << "(" << oldPos.x << ", " << oldPos.y << ")\n";
-					#endif
 				}
 			}
 			else
@@ -126,34 +118,18 @@ public:
 					// newPos have OFFSET
 					sf::Vector2f newPos(tile.x * TILE_SIZE + OFFSET, tile.y * TILE_SIZE + OFFSET);
 					
-					// m_pieces[m_selectedPieceIndex].setPosition(newPos);
-
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
 					m_command += toChess(newPos);
-					
-					#ifdef DEBUG
-					std::cout << "[DEBUG] player::newPos = " << "(" << newPos.x << ", " << newPos.y << ")\n";
-					std::cout << "[DEBUG] m_command = " << m_command << "\n";
-					#endif
-					
-					s_positions += " " + m_command;
 					move(m_command);
+					s_positions += " " + m_command;
 					
 					// stockfish move
 					if(getNextMove())
 					{
-						#ifdef DEBUG
-						std::cout << "m_stockfishMove = " << m_stockfishMove << "\n";
-						#endif
-						
 						move(m_stockfishMove);
 						m_command.clear();
 						m_stockfishMove.clear();
-						
-						#ifdef DEBUG
-						std::cout << "s_positions = " << s_positions << "\n";
-						#endif
 					}
 				}
 			}
@@ -221,9 +197,6 @@ public:
 		{
 			if(arePositionsEqual(m_pieces[i].getPosition(), oldPos))
 			{
-				std::cout << "[DEBUG] Moving piece[" << i << "] from (" << oldPos.x << ", " << oldPos.y 
-							<< ") to (" << newPos.x << ", " << newPos.y << ")\n";
-				
 				m_pieces[i].setPosition(newPos);
 				
 				// remember the index of the moved figure
@@ -240,30 +213,23 @@ public:
 			return;
 		}
 		
+		castling(str);
+
 		// support for beating figures
 		for(int i = 0; i < 32; ++i)
 		{
 			if(arePositionsEqual(m_pieces[i].getPosition(), newPos) and i != movingPieceIndex)
 			{
-				std::cout << "[DEBUG] Found piece[" << i << "] at newPos (" << newPos.x << ", " 
-							<< newPos.y << "). Checking for capture.\n";
-				
 				// check if it's an opponent's piece
 				if(m_pieces[i].isWhite != m_pieces[movingPieceIndex].isWhite)
 				{
 					// hide captured pawn
 					m_pieces[i].setPosition(-200, -200);
-					
-					std::cout << "[DEBUG] Capturing piece[" << i << "] at (" << newPos.x << ", " << newPos.y << ")\n";
 				}
-				else
-					std::cout << "[DEBUG] No capture. Same color piece at (" << newPos.x << ", " << newPos.y << ").\n";
 				
 				break;
 			}
 		}
-
-		castling(str);
 	}
 
 	void draw(sf::RenderWindow& window)
