@@ -123,10 +123,11 @@ public:
 				// attempt to make a move
 				if(isValidMove(m_selectedTile, tile))
 				{
+					// newPos have OFFSET
 					sf::Vector2f newPos(tile.x * TILE_SIZE + OFFSET, tile.y * TILE_SIZE + OFFSET);
 					
-					m_pieces[m_selectedPieceIndex].setPosition(newPos);
-					
+					// m_pieces[m_selectedPieceIndex].setPosition(newPos);
+
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
 					m_command += toChess(newPos);
@@ -136,8 +137,8 @@ public:
 					std::cout << "[DEBUG] m_command = " << m_command << "\n";
 					#endif
 					
-					move(m_command);
 					s_positions += " " + m_command;
+					move(m_command);
 					
 					// stockfish move
 					if(getNextMove())
@@ -232,8 +233,6 @@ public:
 			}
 		}
 		
-		// castling(str);
-		
 		if(movingPieceIndex == -1)
 		{
 			std::cout << "[ERROR] No piece found at oldPos (" << oldPos.x << ", " << oldPos.y << ")\n";
@@ -263,6 +262,8 @@ public:
 				break;
 			}
 		}
+
+		castling(str);
 	}
 
 	void draw(sf::RenderWindow& window)
