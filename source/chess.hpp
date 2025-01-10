@@ -84,53 +84,45 @@ public:
 		}
 	}
 
-	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
-	{
+	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window) {
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-		
 		int mPosX = std::round((mousePos.x - OFFSET) / TILE_SIZE);
 		int mPosY = std::round((mousePos.y - OFFSET) / TILE_SIZE);
-		
 		sf::Vector2f tile(mPosX, mPosY);
-		
-		if(event.type == sf::Event::MouseButtonPressed and event.mouseButton.button == sf::Mouse::Left)
-		{
-			if(not m_pieceSelected)
-			{
-				// change of figure
-				m_selectedPieceIndex = getPieceAt(tile);
-				
-				if(m_selectedPieceIndex != -1)
-				{
-					m_pieceSelected = true;
-					m_selectedTile = tile;
-					
-					// oldPos have OFFSET because m_pieces[].setPosition(have OFFSET)
-					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
-					m_command = toChess(oldPos);
-				}
-			}
-			else
-			{
-				// attempt to make a move
-				if(isValidMove(m_selectedTile, tile))
-				{
-					// newPos have OFFSET
+
+		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+			if (m_pieceSelected) {
+				// Jeśli użytkownik kliknie ponownie na wybrany pionek, odznacz go
+				if (tile == m_selectedTile) {
+					m_pieceSelected = false;
+					m_selectedPieceIndex = -1;
+				} else if (isValidMove(m_selectedTile, tile)) {
+					// Próbujemy wykonać ruch
 					sf::Vector2f newPos(tile.x * TILE_SIZE + OFFSET, tile.y * TILE_SIZE + OFFSET);
-					
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
 					m_command += toChess(newPos);
 					move(m_command);
 					s_positions += " " + m_command;
-					
-					// stockfish move
-					if(getNextMove())
-					{
+					m_command.clear();
+					m_stockfishMove.clear();
+
+					// Ruch silnika Stockfish
+					if (getNextMove()) {
 						move(m_stockfishMove);
+						s_positions += " " + m_stockfishMove;
 						m_command.clear();
 						m_stockfishMove.clear();
 					}
+				}
+			} else {
+				// Jeśli żaden pionek nie jest zaznaczony, spróbuj zaznaczyć pionek
+				m_selectedPieceIndex = getPieceAt(tile);
+				if (m_selectedPieceIndex != -1) {
+					m_pieceSelected = true;
+					m_selectedTile = tile;
+					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
+					m_command = toChess(oldPos);
 				}
 			}
 		}
@@ -170,9 +162,6 @@ public:
 			m_stockfishMove = (endIdx != std::string::npos) 
 								? response.substr(bestmoveIdx + 9, endIdx - (bestmoveIdx + 9))
 								: response.substr(bestmoveIdx + 9);
-			
-			// adding Stockfish Movement to History
-			s_positions += " " + m_stockfishMove;
 			
 			return true;
 		}

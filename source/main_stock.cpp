@@ -42,9 +42,18 @@ int main(void)
 		}
 		
 		// setting some additional engine options
-		engine.sendCommand("setoption name Skill Level value 5");
-		engine.sendCommand("setoption name Minimum Thinking Time value 3000");
+		// uci
+		// setoption name Skill Level value 1
+		// setoption name Move Overhead value 3000
+		// setoption name Slow Mover value 1000
+		// setoption name Minimum Thinking Time value 5000
+		// isready
+		// go
 		engine.sendCommand("uci");
+		engine.sendCommand("setoption name Skill Level value 1");
+		// engine.sendCommand("setoption name Move Overhead value 3000");
+		// engine.sendCommand("setoption name Slow Mover value 5000");
+		// engine.sendCommand("setoption name UCI_AnalyseMode value true");
 		std::cout << engine.getResponse();
 		
 		engine.sendCommand("isready");
@@ -57,7 +66,7 @@ int main(void)
 			
 			return -1;
 		}
-		
+
 		Chess chess(engine);
 		chess.setupBoard();
 		chess.goNewGame();

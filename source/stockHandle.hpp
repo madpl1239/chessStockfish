@@ -236,7 +236,7 @@ public:
 			}
 		}
 
-		if(bytesRead == 0 && GetLastError() != ERROR_MORE_DATA)
+		if(bytesRead == 0 and GetLastError() != ERROR_MORE_DATA)
 			throw std::runtime_error("Failed to read response from Stockfish");
 
 		#ifdef DEBUG
