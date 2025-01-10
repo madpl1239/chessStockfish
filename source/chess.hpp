@@ -230,6 +230,14 @@ public:
 				break;
 			}
 		}
+
+		// check if the king is in check
+		if(checkForCheck())
+			std::cout << "The kings are in check!\n";
+
+		// check if game ends?
+		if(checkForMate())
+			std::cout << "game over, mate!\n";
 	}
 
 	void draw(sf::RenderWindow& window)
@@ -303,6 +311,43 @@ private:
 		if(str == "e8c8") 
 			if(s_positions.find("e8") == -1)
 				move("a8d8");
+	}
+
+	// method for checking mates
+	bool checkForMate()
+	{
+		std::string command = "position startpos moves" + s_positions;
+		m_engine.sendCommand(command);
+		// Krótkie sprawdzenie możliwych ruchów
+		m_engine.sendCommand("go depth 1");
+
+		std::string response = m_engine.getResponse();
+		if(response.find("mate 0") != std::string::npos)
+			return true;
+
+		return false;
+	}
+
+	// method to check if the king is in check
+	bool checkForCheck()
+	{
+		std::string command = "position startpos moves" + s_positions;
+		m_engine.sendCommand(command);
+		m_engine.sendCommand("go depth 1");
+		std::string response = m_engine.getResponse();
+
+		if(response.find("bestmove") != std::string::npos)
+		{
+			size_t checkIdx = response.find("info depth 1");
+			if(checkIdx != std::string::npos and response.find("cp 0", checkIdx) == std::string::npos)
+			{
+				std::cout << "Check!" << std::endl;
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	bool isValidMove(sf::Vector2f start, sf::Vector2f end)
