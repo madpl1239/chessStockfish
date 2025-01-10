@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <cctype>
 #include <cmath>
+#include <sstream>
 #include "defines.hpp"
 
 
@@ -231,11 +232,9 @@ public:
 			}
 		}
 
-		// check if the king is in check
 		if(checkForCheck())
-			std::cout << "The kings are in check!\n";
+			std::cout << "The kings are in shah!\n";
 
-		// check if game ends?
 		if(checkForMate())
 			std::cout << "game over, mate!\n";
 	}
@@ -313,40 +312,49 @@ private:
 				move("a8d8");
 	}
 
-	// method for checking mates
-	bool checkForMate()
-	{
-		std::string command = "position startpos moves" + s_positions;
-		m_engine.sendCommand(command);
-		// Krótkie sprawdzenie możliwych ruchów
-		m_engine.sendCommand("go depth 1");
-
-		std::string response = m_engine.getResponse();
-		if(response.find("mate 0") != std::string::npos)
-			return true;
-
-		return false;
-	}
-
-	// method to check if the king is in check
 	bool checkForCheck()
 	{
 		std::string command = "position startpos moves" + s_positions;
 		m_engine.sendCommand(command);
 		m_engine.sendCommand("go depth 1");
 		std::string response = m_engine.getResponse();
-
+		
+		// Debugowanie odpowiedzi z silnika
+		std::cout << "Response for check detection: " << response << std::endl;
+		
 		if(response.find("bestmove") != std::string::npos)
 		{
-			size_t checkIdx = response.find("info depth 1");
-			if(checkIdx != std::string::npos and response.find("cp 0", checkIdx) == std::string::npos)
+			std::istringstream iss(response);
+			std::string line;
+			while(std::getline(iss, line))
 			{
-				std::cout << "Check!" << std::endl;
-
-				return true;
+				// Sprawdzanie obecności frazy "info depth 1" oraz braku "mate" i "cp"
+				if(line.find("info depth 1") != std::string::npos)
+				{
+					if(line.find("check") == std::string::npos and line.find("cp") == std::string::npos)
+					{
+						return true;
+					}
+				}
 			}
 		}
+		
+		return false;
+	}
 
+	bool checkForMate()
+	{
+		std::string command = "position startpos moves" + s_positions;
+		m_engine.sendCommand(command);
+		m_engine.sendCommand("go depth 1");
+		std::string response = m_engine.getResponse();
+		
+		// Debugowanie odpowiedzi z silnika
+		std::cout << "Response for mate detection: " << response << std::endl;
+		
+		if(response.find("mate") != std::string::npos)
+			return true;
+		
 		return false;
 	}
 

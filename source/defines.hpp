@@ -10,8 +10,8 @@
 // #undef DEBUG
 
 // for Linux, Windows Systems
-#undef LINUX
-#define WINDOWS
+#define LINUX
+#undef WINDOWS
 
 #define READ 0
 #define WRITE 1

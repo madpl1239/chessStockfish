@@ -212,7 +212,7 @@ public:
 	{
 		DWORD written;
 		std::string cmd = command + "\n";
-
+		
 		if(!WriteFile(m_pipeWriteParent, cmd.c_str(), cmd.size(), &written, NULL))
 			throw std::runtime_error("Failed to send command to Stockfish");
 	}

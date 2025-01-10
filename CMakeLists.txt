@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.22)
 project(stockTest LANGUAGES CXX)
 
 file(GLOB_RECURSE SOURCES ./source/*)
-add_definitions(-Os -march=native -std=c++17)
+add_definitions(-O3 -march=native -std=c++17)
 
 find_package(SFML 2.5 COMPONENTS system window graphics REQUIRED)
 
