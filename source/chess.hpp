@@ -84,20 +84,27 @@ public:
 		}
 	}
 
-	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window) {
+	void handleMouseEvent(sf::Event& event, sf::RenderWindow& window)
+	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		int mPosX = std::round((mousePos.x - OFFSET) / TILE_SIZE);
 		int mPosY = std::round((mousePos.y - OFFSET) / TILE_SIZE);
 		sf::Vector2f tile(mPosX, mPosY);
 
-		if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-			if (m_pieceSelected) {
-				// Jeśli użytkownik kliknie ponownie na wybrany pionek, odznacz go
-				if (tile == m_selectedTile) {
+		if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+		{
+			if(m_pieceSelected)
+			{
+				// if the user clicks on the selected piece again, deselect it
+				if(tile == m_selectedTile)
+				{
 					m_pieceSelected = false;
 					m_selectedPieceIndex = -1;
-				} else if (isValidMove(m_selectedTile, tile)) {
-					// Próbujemy wykonać ruch
+				}
+
+				else if(isValidMove(m_selectedTile, tile))
+				{
+					// we're trying to make a move
 					sf::Vector2f newPos(tile.x * TILE_SIZE + OFFSET, tile.y * TILE_SIZE + OFFSET);
 					m_selectedPieceIndex = -1;
 					m_pieceSelected = false;
@@ -107,18 +114,22 @@ public:
 					m_command.clear();
 					m_stockfishMove.clear();
 
-					// Ruch silnika Stockfish
-					if (getNextMove()) {
+					// move of engine
+					if(getNextMove())
+					{
 						move(m_stockfishMove);
 						s_positions += " " + m_stockfishMove;
 						m_command.clear();
 						m_stockfishMove.clear();
 					}
 				}
-			} else {
-				// Jeśli żaden pionek nie jest zaznaczony, spróbuj zaznaczyć pionek
+			}
+			else
+			{
+				// if no pawn is marked, try marking a pawn
 				m_selectedPieceIndex = getPieceAt(tile);
-				if (m_selectedPieceIndex != -1) {
+				if(m_selectedPieceIndex != -1)
+				{
 					m_pieceSelected = true;
 					m_selectedTile = tile;
 					sf::Vector2f oldPos = m_pieces[m_selectedPieceIndex].getPosition();
